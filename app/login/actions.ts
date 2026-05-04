@@ -66,7 +66,13 @@ export async function loginUser(
     // Here you would typically set a session cookie or JWT token to keep the user logged in.
     // For this example, we'll just redirect to the dashboard.
     const cookieStore = await cookies();
-    cookieStore.set("sessionId", user.id, {httpOnly: true });
+    cookieStore.set("sessionId", user.id, {
+        httpOnly: true, // cookie cannot be accessed via JavaScript
+        secure: true, // set to true in production
+        sameSite: "lax", // adjust as needed for your application
+        path: "/", // cookie is valid for the entire site
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
     redirect("/dashboard");
 }   
 
