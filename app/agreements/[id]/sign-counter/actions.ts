@@ -109,7 +109,17 @@ export async function signAgreement(
         },
     });
 
-    // --- STEP 6: Update agreement status ---
+    // --- STEP 6: Create an audit log entry ---
+    await prisma.auditLog.create({
+        data: {
+            agreementId: agreementId,
+            actorUserId: session.id,
+            actorEmail: session.email,
+            action: "agreement_signed_by_counterparty",
+        }
+    });
+
+    // --- STEP 7: Update agreement status
     await prisma.agreement.update({
         where: { id: agreementId },
         data: {
@@ -117,6 +127,6 @@ export async function signAgreement(
         },
     });
 
-    // --- STEP 7: Redirect to agreement details page ---
+    // --- STEP 8: Redirect back to agreement details page ---
     redirect(`/agreements/${agreementId}`);
 }

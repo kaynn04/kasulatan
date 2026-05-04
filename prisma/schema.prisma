@@ -17,6 +17,7 @@ model User {
   updatedAt         DateTime         @updatedAt
   createdAgreements Agreement[]      @relation("createdAgreements")
   agreementParties  AgreementParty[]
+  auditLogs         AuditLog[]
 }
 
 model Agreement {
@@ -37,6 +38,7 @@ model Agreement {
   updatedAt       DateTime         @updatedAt
   createdBy       User             @relation("createdAgreements", fields: [createdById], references: [id])
   parties         AgreementParty[]
+  auditLogs       AuditLog[]
 }
 
 model AgreementParty {
@@ -82,4 +84,19 @@ enum AgreementStatus {
 enum AgreementPartyRole {
   CREATOR
   COUNTERPARTY
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  agreementId  String
+  actorUserId  String
+  actorEmail   String
+  action       String
+  ipAddress    String?
+  userAgent    String?
+  metadataJson String?
+  createdAt    DateTime @default(now())
+
+  agreement Agreement @relation(fields: [agreementId], references: [id])
+  actor     User      @relation(fields: [actorUserId], references: [id])
 }

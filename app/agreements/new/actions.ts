@@ -145,6 +145,15 @@ export async function createAgreement(
                 },
             ],
         });
+
+        await tx.auditLog.create({
+            data: {
+                agreementId: agreement.id,
+                actorUserId: session.id,
+                actorEmail: session.email,
+                action: "agreement_created",
+            },
+        });
     });
 
     // --- STEP 5: Success → redirect (same as before) ---
