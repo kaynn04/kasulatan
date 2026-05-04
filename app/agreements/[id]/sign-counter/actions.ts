@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 // The type lives here but NOT exported, because it's only relevant to this file.
@@ -25,6 +26,31 @@ export async function signAgreement(
     const consentedSignature = formData.get("consentedSignature") === "on";
     const typedSignature = (formData.get("typedSignature") as string)?.trim();
 
+    const session = await getSession();
+
+    if (!session) {
+        return {
+            success: false,
+            errors: { general: "You must be logged in to sign an agreement." },
+        };
+    }
+
+    // --- STEP 2: Validate user is the counterparty ---
+    const counterParty = await prisma.agreementParty.findFirst({
+        where: {
+            agreementId: agreementId,
+            role: "COUNTERPARTY",
+        },
+    });
+
+    // Note: We compare emails in lowercase to avoid case sensitivity issues, as emails are generally case-insensitive.
+    if (!counterParty || counterParty.email.toLowerCase() !== session.email.toLowerCase()) {
+        return {
+            success: false,
+            errors: { general: "You are not authorized to sign this agreement." },
+        };
+    }
+
     // check if agreement is in a signable state
     const agreement = await prisma.agreement.findUnique({
         where: { id: agreementId },
@@ -37,7 +63,7 @@ export async function signAgreement(
         };
     }
 
-    // --- STEP 2: Validate form input ---
+    // --- STEP 3: Validate form inputs ---
     const errors: SignAgreementState["errors"] = {};
 
     if (!confirmedRead) {
@@ -54,14 +80,8 @@ export async function signAgreement(
         return { success: false, errors };
     }
 
-    // --- STEP 3: Find the counterparty record ---
-    const counterParty = await prisma.agreementParty.findFirst({
-        where: {
-            agreementId: agreementId,
-            role: "COUNTERPARTY",
-        },
-    });
-
+    
+    // Extra check to ensure counterParty exists before accessing fullName, even though we checked earlier. This is just to satisfy TypeScript's type checking.
     if (!counterParty) {
         return {
             success: false,

@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
 type SignAgreementState = {
@@ -33,7 +34,24 @@ export async function signAgreementAsCreator(
                 errors: { general: "This agreement cannot be signed." },
             };
         }
-    
+
+        // --- STEP 1: Validate user is logged in and is the creator ---
+        const session = await getSession();
+
+        if (!session) {
+            return {
+                success: false,
+                errors: { general: "You must be logged in to sign an agreement." },
+            };
+        }
+
+        if (agreement.createdById !== session.id) {
+            return {
+                success: false,
+                errors: { general: "You are not authorized to sign this agreement." },
+            };
+        }
+
         // --- STEP 2: Validate form input ---
         const errors: SignAgreementState["errors"] = {};
     
@@ -52,32 +70,32 @@ export async function signAgreementAsCreator(
         }
     
         // --- STEP 3: Find the counterparty record ---
-        const counterParty = await prisma.agreementParty.findFirst({
+        const creator = await prisma.agreementParty.findFirst({
             where: {
                 agreementId: agreementId,
                 role: "CREATOR",
             },
         });
     
-        if (!counterParty) {
+        if (!creator) {
             return {
                 success: false,
-                errors: { general: "Counterparty record not found" },
+                errors: { general: "Creator record not found" },
             };
         }
     
         // --- STEP 4: Validate signature matches their name ---
         // Compare lowercase so "john doe" matches "John Doe"
-        if (typedSignature.toLowerCase() !== counterParty.fullName.toLowerCase()) {
+        if (typedSignature.toLowerCase() !== creator.fullName.toLowerCase()) {
             return {
                 success: false,
-                errors: { typedSignature: "Signature must match your full name: " + counterParty.fullName},
+                errors: { typedSignature: "Signature must match your full name: " + creator.fullName},
             };
         }
     
         // --- STEP 5: Update the AgreementParty record ---
         await prisma.agreementParty.update({
-            where: { id: counterParty.id },
+            where: { id: creator.id },
             data: {
                 typedSignature: typedSignature,
                 consentedToElectronicSignature: true,
