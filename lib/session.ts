@@ -17,6 +17,7 @@ export async function getSession() {
             id: true,
             name: true,
             email: true,
+            mobileNumber: true,
         },
     });
     return session;

@@ -26,6 +26,16 @@ export default async function SignCreatorAgreementPage({
 
     if (!agreement) notFound();
 
+    if (agreement.createdById !== session.id) {
+        return(
+            <main>
+                <h1>Cannot Sign This Agreement</h1>
+                <p>Only the creator can sign on this page.</p>
+                <Link href={`/agreements/${agreement.id}`}>← Back to Agreement Details</Link>
+            </main>
+        )
+    }
+
     if (agreement.status === "FINALIZED"){
         return (
             <main>

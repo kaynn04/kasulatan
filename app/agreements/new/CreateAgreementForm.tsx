@@ -18,7 +18,6 @@ type CreateAgreementState = {
         amount?: string;
         paymentTerms?: string;
         termsText?: string;
-        counterPartyName?: string;
         counterPartyEmail?: string;
     };
 };
@@ -50,6 +49,7 @@ export default function CreateAgreementForm() {
                 <select id="agreementType" name="agreementType">
                     <option value="LOAN">Loan</option>
                     <option value="SALE">Sale</option>
+                    <option value="SWAP">Swap</option>
                     <option value="SERVICE">Service</option>
                 </select>
                 {state.errors?.agreementType && <p style={{ color: "red" }}>{state.errors.agreementType}</p>}
@@ -82,20 +82,9 @@ export default function CreateAgreementForm() {
             <h2>Counterparty Details</h2>
 
             <div>
-                <label htmlFor="counterPartyName">Full Name</label>
-                <input id="counterPartyName" name="counterPartyName" type="text" />
-                {state.errors?.counterPartyName && <p style={{ color: "red" }}>{state.errors.counterPartyName}</p>}
-            </div>
-
-            <div>
                 <label htmlFor="counterPartyEmail">Email</label>
                 <input id="counterPartyEmail" name="counterPartyEmail" type="email" />
                 {state.errors?.counterPartyEmail && <p style={{ color: "red" }}>{state.errors.counterPartyEmail}</p>}
-            </div>
-
-            <div>
-                <label htmlFor="counterPartyMobile">Mobile</label>
-                <input id="counterPartyMobile" name="counterPartyMobile" type="tel" />
             </div>
 
             {/* disabled={pending} prevents double-submit.

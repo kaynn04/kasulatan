@@ -11,6 +11,7 @@ type RegisterState = {
         name?: string;
         email?: string;
         password?: string;
+        mobileNumber?: string;
         confirmPassword?: string;
         general?: string; // for any other errors that don't fit the above categories
     };
@@ -23,6 +24,7 @@ export async function registerUser(
     // --- STEP 1: Extract form values ---
     const name = (formData.get("name") as string)?.trim();
     const email = (formData.get("email") as string)?.trim();
+    const mobileNumber = (formData.get("mobileNumber") as string)?.trim();
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
@@ -34,6 +36,9 @@ export async function registerUser(
     }
     if (!email) {
         errors.email = "Email is required.";
+    }
+    if (!mobileNumber) {
+        errors.mobileNumber = "Mobile number is required.";
     }
     if (!password) {
         errors.password = "Password is required.";
@@ -68,7 +73,9 @@ export async function registerUser(
         data: {
             name,
             email,
-            passwordHash
+            mobileNumber,
+            passwordHash,
+            
         }
     });
 

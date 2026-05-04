@@ -20,7 +20,6 @@ type CreateAgreementState = {
         amount?: string;
         paymentTerms?: string;
         termsText?: string;
-        counterPartyName?: string;
         counterPartyEmail?: string;
     };
 };
@@ -44,8 +43,8 @@ export async function createAgreement(
     const paymentTerms = (formData.get("paymentTerms") as string)?.trim();
     const termsText = (formData.get("termsText") as string)?.trim();
     const counterPartyName = (formData.get("counterPartyName") as string)?.trim();
-    const counterPartyEmail = (formData.get("counterPartyEmail") as string)?.trim();
     const counterPartyMobile = (formData.get("counterPartyMobile") as string)?.trim();
+    const counterPartyEmail = (formData.get("counterPartyEmail") as string)?.trim();
 
     const session = await getSession();
 
@@ -67,7 +66,6 @@ export async function createAgreement(
     if (!subjectMatter) errors.subjectMatter = "Subject matter is required";
     if (!paymentTerms) errors.paymentTerms = "Payment terms are required";
     if (!termsText) errors.termsText = "Terms are required";
-    if (!counterPartyName) errors.counterPartyName = "Counterparty name is required";
 
     // Amount needs special validation — must be a real positive number
     const amount = parseFloat(amountRaw);
@@ -83,7 +81,7 @@ export async function createAgreement(
     }
 
     // Agreement type must be one of our allowed values
-    if (!["LOAN", "SALE", "SERVICE"].includes(agreementType)) {
+    if (!["LOAN", "SALE", "SWAP", "SERVICE"].includes(agreementType)) {
         errors.agreementType = "Invalid agreement type";
     }
 
@@ -97,13 +95,27 @@ export async function createAgreement(
         };
     }
 
+    // --- STEP 3B: Look up counterparty user by email ---
+    const counterPartyUser = await prisma.user.findUnique({
+        where: { email: counterPartyEmail },
+    });
+
+    if (!counterPartyUser) {
+        return {
+            success: false,
+            errors: {
+                counterPartyEmail: "User with this email not found. They must register first.",
+            }
+        };
+    }
+
     // --- STEP 4: Validation passed — write to DB (same as before) ---
     await prisma.$transaction(async (tx) => {
         const agreement = await tx.agreement.create({
             data: {
                 referenceNumber: `KAS-${Date.now()}`,
                 createdById: session.id,
-                agreementType: agreementType as "LOAN" | "SALE" | "SERVICE",
+                agreementType: agreementType as "LOAN" | "SALE" | "SWAP" | "SERVICE",
                 title,
                 subjectMatter,
                 amount,
@@ -122,14 +134,14 @@ export async function createAgreement(
                     role: "CREATOR",
                     fullName: session.name || "Unknown User",
                     email: session.email || "unknown@example.com",
-                    mobileNumber: "1234567890",
+                    mobileNumber: session.mobileNumber || null,
                 },
                 {
                     agreementId: agreement.id,
                     role: "COUNTERPARTY",
-                    fullName: counterPartyName,
+                    fullName: counterPartyUser.name || "Unknown User",
                     email: counterPartyEmail,
-                    mobileNumber: counterPartyMobile || null,
+                    mobileNumber: counterPartyUser.mobileNumber || null,
                 },
             ],
         });

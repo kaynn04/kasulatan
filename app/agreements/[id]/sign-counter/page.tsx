@@ -27,6 +27,20 @@ export default async function SignAgreementPage({
 
     if (!agreement) notFound();
 
+    const counterParty = agreement.parties.find(p => p.role === "COUNTERPARTY");
+
+    if (!counterParty) notFound();
+
+    if (counterParty.email !== session.email) {
+        return (
+            <main>
+                <h1>Cannot Sign Your Own Agreement</h1>
+                <p>You are the creator of this agreement and cannot sign it as a counterparty.</p>
+                <Link href={`/agreements/${agreement.id}`}>← Back to Agreement Details</Link>
+            </main>
+        )
+    }
+
     if (agreement.status !== "DRAFT") {
         return (
             <main>
@@ -36,10 +50,6 @@ export default async function SignAgreementPage({
             </main>
         )
     }
-
-    const counterParty = agreement.parties.find(p => p.role === "COUNTERPARTY");
-
-    if (!counterParty) notFound();
             
     return (
         <main>

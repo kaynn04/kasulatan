@@ -8,6 +8,7 @@ type RegisterState = {
     errors: {
         name?: string;
         email?: string;
+        mobileNumber?: string;
         password?: string;
         confirmPassword?: string;
         general?: string; // for any other errors that don't fit the above categories
@@ -37,6 +38,11 @@ export default function RegisterForm() {
                 {state?.errors?.email && <p style={{ color: "red" }}>{state.errors.email}</p>}
             </div>
             <div>
+                <label htmlFor="mobileNumber">Mobile Number</label>
+                <input type="text" name="mobileNumber" id="mobileNumber" />
+                {state?.errors?.mobileNumber && <p style={{ color: "red" }}>{state.errors.mobileNumber}</p>}
+            </div>
+            <div>
                 <label htmlFor="password">Password</label>
                 <input type="password" name="password" id="password" />
                 {state?.errors?.password && <p style={{ color: "red" }}>{state.errors.password}</p>}
@@ -46,6 +52,7 @@ export default function RegisterForm() {
                 <input type="password" name="confirmPassword" id="confirmPassword" />
                 {state?.errors?.confirmPassword && <p style={{ color: "red" }}>{state.errors.confirmPassword}</p>}
             </div>
+            
             <button type="submit" disabled={pending}>
                 {pending ? "Registering..." : "Register"}
             </button>

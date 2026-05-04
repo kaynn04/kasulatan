@@ -16,8 +16,14 @@ export default async function AgreementDetailsPage({
         redirect("/login");
     }
     
-    const agreement = await prisma.agreement.findUnique({
-        where: { id },
+    const agreement = await prisma.agreement.findFirst({
+        where: { 
+            id,
+            OR: [
+                { createdById: session.id },
+                { parties: { some: { email: session.email, role: "COUNTERPARTY" } } },
+            ]
+        },
         include: {
             parties: true, // <- fetch related parties for display
         },
@@ -28,6 +34,11 @@ export default async function AgreementDetailsPage({
     // Separate parties by role for easier display
     const creator = agreement.parties.find(p => p.role === "CREATOR");
     const counterParty = agreement.parties.find(p => p.role === "COUNTERPARTY");
+
+    const isCreatorViewer = agreement.createdById === session.id;
+    const isCounterpartyViewer =
+        !!counterParty &&
+        counterParty.email.toLowerCase() === session.email.toLowerCase();
     return (
         <main>
             <Link href="/agreements">← Back to Agreements</Link>
@@ -58,8 +69,12 @@ export default async function AgreementDetailsPage({
                             </>
                         ): (
                             <>
-                            <p>Not yet signed</p>
-                            <a href={`/agreements/${agreement.id}/sign-creator`}>Start signing</a>
+                                <p>Not yet signed</p>
+                                {isCreatorViewer && (
+                                    <Link href={`/agreements/${agreement.id}/sign-creator`}>
+                                        Start signing
+                                    </Link>
+                                )}
                             </>
                         )}
                     </>
@@ -86,9 +101,15 @@ export default async function AgreementDetailsPage({
                             </>
                         ): (
                             <>
-                                <p>Not yet signed</p>
-                                <a href={`/agreements/${agreement.id}/sign`}>Send to counter party for signing</a>
-                            </>
+                            <p>Not yet signed</p>
+                            {isCounterpartyViewer ? (
+                                <Link href={`/agreements/${agreement.id}/sign-counter`}>
+                                    Start signing
+                                </Link>
+                            ) : (
+                                <p>Send to counterparty for signing.</p>
+                            )}
+                        </>
                         )}
                     </>
                 ) : (
