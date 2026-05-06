@@ -1,6 +1,6 @@
 import "./globals.css";
-import Link from "next/link";
 import type { Metadata } from "next";
+import Navbar from "./navbar";
 
 export const metadata: Metadata = {
   title: "Kasulatan",
@@ -15,17 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <header>
-          <nav>
-            <Link href="/">Home</Link>
-            <Link href="/dashboard">Dashboard</Link>
-            <Link href="/agreements">Agreements</Link>
-            <Link href="/agreements/new">New Agreement</Link>
-            <Link href="/login">Login</Link>
-            <Link href="/register">Register</Link>
-          </nav>
-        </header>
-
+        <Navbar />
         {children}
       </body>
     </html>

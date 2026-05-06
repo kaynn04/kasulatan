@@ -1,32 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", sans-serif;
+  --font-serif: "DM Serif Display", serif;
+
+  --color-brand-blue:  #3DB2FF;
+  --color-brand-cream: #FFEDDA;
+  --color-brand-amber: #FFB830;
+  --color-brand-red:   #FF2442;
+}
+
+/* ── Your existing base styles (preserved) ── */
+*  {
+  box-sizing: border-box;
+}
+
 html,
 body {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  font-family: "DM Sans", Arial, sans-serif;
   background-color: #f7f7f7;
-  color: #111827
-}
-
-* {
-  box-sizing: border-box;
-}
-
-main {
-  min-height: 100vh;
-  padding: 48px 24px;
-}
-
-h1 {
-  margin: 0 0 12px;
-  font-size: 40px;
+  color: #111827;
+  -webkit-font-smoothing: antialiased;
 }
 
 p {
   margin: 0;
   font-size: 18px;
-  line-height: 1.6
+  line-height: 1.6;
 }
 
+/* ── Nav ── */
 header {
   background-color: #111827;
   padding: 16px 24px;
@@ -46,4 +52,11 @@ nav a {
 
 nav a:hover {
   text-decoration: underline;
+}
+
+/* ── Remove default main padding on register/login pages
+   (the split-panel layout handles its own spacing) ── */
+main {
+  min-height: 100vh;
+  padding: 0;
 }
