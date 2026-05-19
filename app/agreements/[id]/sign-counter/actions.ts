@@ -12,6 +12,7 @@ type SignAgreementState = {
         confirmedRead?: string;
         consentedSignature?: string;
         typedSignature?: string;
+        signatureImage?: string;
         general?: string; // for any other errors that don't fit the above categories
     };
 };
@@ -25,6 +26,7 @@ export async function signAgreement(
     const confirmedRead = formData.get("confirmedRead") === "on"; // checkbox returns "on" if checked
     const consentedSignature = formData.get("consentedSignature") === "on";
     const typedSignature = (formData.get("typedSignature") as string)?.trim();
+    const signatureImage = (formData.get("signatureImage") as string)?.trim();
 
     const session = await getSession();
 
@@ -75,6 +77,12 @@ export async function signAgreement(
     if (!typedSignature) {
         errors.typedSignature = "Please type your full name as your signature.";
     }
+    if (signatureImage && !signatureImage.startsWith("data:image/")) {
+        errors.signatureImage = "Please provide a valid signature image.";
+    }
+    if (signatureImage && signatureImage.length > 700_000) {
+        errors.signatureImage = "Signature image is too large. Please upload a smaller image.";
+    }
 
     if (Object.keys(errors).length > 0) {
         return { success: false, errors };
@@ -103,6 +111,7 @@ export async function signAgreement(
         where: { id: counterParty.id },
         data: {
             typedSignature: typedSignature,
+            signatureImage: signatureImage || null,
             consentedToElectronicSignature: true,
             confirmedReadAgreement: true,
             signedAt: new Date(),

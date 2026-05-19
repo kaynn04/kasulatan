@@ -10,6 +10,7 @@ type SignAgreementState = {
         confirmedRead?: string;
         consentedSignature?: string;
         typedSignature?: string;
+        signatureImage?: string;
         general?: string;
     };
 };
@@ -22,6 +23,7 @@ export async function signAgreementAsCreator(
     const confirmedRead = formData.get("confirmedRead") === "on"; // checkbox returns "on" if checked
     const consentedSignature = formData.get("consentedSignature") === "on";
     const typedSignature = (formData.get("typedSignature") as string)?.trim();
+    const signatureImage = (formData.get("signatureImage") as string)?.trim();
 
     // check if agreement is in a signable state
         const agreement = await prisma.agreement.findUnique({
@@ -64,6 +66,12 @@ export async function signAgreementAsCreator(
         if (!typedSignature) {
             errors.typedSignature = "Please type your full name as your signature.";
         }
+        if (signatureImage && !signatureImage.startsWith("data:image/")) {
+            errors.signatureImage = "Please provide a valid signature image.";
+        }
+        if (signatureImage && signatureImage.length > 700_000) {
+            errors.signatureImage = "Signature image is too large. Please upload a smaller image.";
+        }
     
         if (Object.keys(errors).length > 0) {
             return { success: false, errors };
@@ -98,6 +106,7 @@ export async function signAgreementAsCreator(
             where: { id: creator.id },
             data: {
                 typedSignature: typedSignature,
+                signatureImage: signatureImage || null,
                 consentedToElectronicSignature: true,
                 confirmedReadAgreement: true,
                 signedAt: new Date(),
