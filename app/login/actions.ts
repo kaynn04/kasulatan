@@ -1,9 +1,9 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
+import { createSession } from "@/lib/session";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 
 
 type LoginState = {
@@ -63,16 +63,7 @@ export async function loginUser(
     }
 
     // --- STEP 5: Set session cookie and redirect ---
-    // Here you would typically set a session cookie or JWT token to keep the user logged in.
-    // For this example, we'll just redirect to the dashboard.
-    const cookieStore = await cookies();
-    cookieStore.set("sessionId", user.id, {
-        httpOnly: true, // cookie cannot be accessed via JavaScript
-        secure: true, // set to true in production
-        sameSite: "lax", // adjust as needed for your application
-        path: "/", // cookie is valid for the entire site
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    await createSession(user.id);
     redirect("/dashboard");
 }   
 
