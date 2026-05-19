@@ -34,8 +34,7 @@ p {
 
 /* ── Nav ── */
 header {
-  background-color: #111827;
-  padding: 16px 24px;
+  background-color: #005461;
 }
 
 nav {
@@ -54,9 +53,417 @@ nav a:hover {
   text-decoration: underline;
 }
 
+.site-header {
+  min-height: 72px;
+  padding: 0 28px;
+}
+
+.site-header-inner {
+  width: 100%;
+  max-width: 1180px;
+  min-height: 72px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 28px;
+}
+
+.site-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.site-brand-mark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: #3BC1A8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.site-brand-text {
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.site-main-nav {
+  justify-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.site-nav-link:hover {
+  background: rgba(59,193,168,0.15) !important;
+  color: #005461 !important;
+  text-decoration: none;
+}
+
+.site-auth-link:hover {
+  border-color: #3BC1A8 !important;
+  color: white !important;
+  text-decoration: none;
+}
+
+.site-auth-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(59,193,168,0.42);
+  color: rgba(255,255,255,0.88);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 800;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.site-register-link:hover {
+  background: #249E94 !important;
+  text-decoration: none;
+}
+
+.site-register-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: #3BC1A8;
+  color: #005461;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 900;
+  transition: background 0.2s;
+}
+
+.site-header-actions {
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.site-user-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  max-width: 240px;
+}
+
+.site-user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #E6FFFA;
+  color: #005461;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.site-user-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.site-user-name,
+.site-user-email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-user-name {
+  color: #111827;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.site-user-email {
+  color: #64748b;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
 /* ── Remove default main padding on register/login pages
    (the split-panel layout handles its own spacing) ── */
 main {
   min-height: 100vh;
   padding: 0;
+}
+
+.home-hero-grid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+}
+
+.home-hero-title {
+  font-size: 58px;
+}
+
+.dashboard-hero,
+.dashboard-main-grid {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.dashboard-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.agreements-page-head {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.agreements-filter-bar {
+  grid-template-columns: minmax(220px, 1fr) repeat(3, minmax(150px, 180px)) auto;
+}
+
+.agreements-workspace {
+  grid-template-columns: minmax(0, 1fr) 330px;
+}
+
+.agreement-card-meta {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.new-agreement-head,
+.new-agreement-layout {
+  grid-template-columns: minmax(0, 1fr) 330px;
+}
+
+.new-agreement-two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.register-page-head,
+.register-layout {
+  grid-template-columns: minmax(0, 1fr) 330px;
+}
+
+.register-two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.agreement-detail-hero {
+  grid-template-columns: minmax(0, 1fr) 280px;
+}
+
+.agreement-detail-layout {
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.agreement-detail-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.agreement-parties-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.signing-hero {
+  grid-template-columns: minmax(0, 1fr) 320px;
+}
+
+.signing-layout {
+  grid-template-columns: minmax(0, 1fr) 380px;
+}
+
+.signing-party-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.summary-field-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summary-party-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 1040px) {
+  .site-header {
+    padding: 0 24px;
+  }
+
+  .site-header-inner {
+    gap: 18px;
+  }
+
+  .site-user-chip {
+    display: none !important;
+  }
+
+  .dashboard-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreements-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  .new-agreement-head,
+  .new-agreement-layout,
+  .register-page-head,
+  .register-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreement-detail-hero,
+  .agreement-detail-layout,
+  .agreement-parties-grid,
+  .signing-hero,
+  .signing-layout,
+  .summary-party-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .agreements-filter-bar {
+    grid-template-columns: minmax(220px, 1fr) repeat(2, minmax(150px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 840px) {
+  .home-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .home-hero-title {
+    font-size: 42px;
+  }
+
+  .dashboard-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreements-page-head,
+  .agreements-filter-bar {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreement-card-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .agreement-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .new-agreement-two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .register-two-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  .signing-party-grid,
+  .summary-field-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media print {
+  header,
+  .summary-screen-actions,
+  .summary-print-actions,
+  .summary-print-button {
+    display: none !important;
+  }
+
+  html,
+  body {
+    background: white !important;
+  }
+
+  .summary-page {
+    min-height: auto !important;
+    background: white !important;
+    padding: 0 !important;
+  }
+
+  .summary-document {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .summary-field-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .summary-party-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header {
+    min-height: auto;
+    padding: 14px 20px;
+  }
+
+  .site-header-inner {
+    min-height: auto;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+  }
+
+  .site-header nav {
+    grid-column: 1 / -1;
+    justify-self: start;
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .site-brand-text {
+    font-size: 25px;
+  }
+
+  .site-header-actions {
+    gap: 8px;
+  }
+
+  .site-auth-link,
+  .site-register-link {
+    min-height: 34px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .dashboard-stats {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreement-card-meta {
+    grid-template-columns: 1fr !important;
+  }
+
+  .agreement-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
 }
