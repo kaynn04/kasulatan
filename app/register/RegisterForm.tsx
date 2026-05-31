@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { registerUser } from "./actions";
 
 type RegisterState = {
@@ -24,6 +24,57 @@ const initialState: RegisterState = {
   success: false,
   errors: {},
 };
+
+type FieldName = Exclude<keyof RegisterState["errors"], "general">;
+type FormValues = Record<FieldName, string>;
+
+const initialValues: FormValues = {
+  name: "",
+  email: "",
+  mobileNumber: "",
+  password: "",
+  confirmPassword: "",
+  addressLine: "",
+  barangay: "",
+  cityMunicipality: "",
+  province: "",
+  postalCode: "",
+};
+
+function validateField(name: FieldName, values: FormValues) {
+  const value = values[name].trim();
+
+  if (!value) {
+    const requiredMessages: Record<FieldName, string> = {
+      name: "Full legal name is required.",
+      email: "Email is required.",
+      mobileNumber: "Mobile number is required.",
+      password: "Password is required.",
+      confirmPassword: "Please confirm your password.",
+      addressLine: "House number, street, or landmark is required.",
+      barangay: "Barangay is required.",
+      cityMunicipality: "City or municipality is required.",
+      province: "Province is required.",
+      postalCode: "Postal code is required.",
+    };
+
+    return requiredMessages[name];
+  }
+
+  if (name === "email" && !value.includes("@")) {
+    return "Enter a valid email address.";
+  }
+
+  if (name === "password" && values.password.length < 12) {
+    return "Password must be at least 12 characters long.";
+  }
+
+  if (name === "confirmPassword" && values.confirmPassword !== values.password) {
+    return "Passwords do not match.";
+  }
+
+  return undefined;
+}
 
 function Field({
   label,
@@ -110,10 +161,43 @@ const inputStyle: React.CSSProperties = {
 
 export default function RegisterForm() {
   const [state, action, pending] = useActionState(registerUser, initialState);
+  const [values, setValues] = useState(initialValues);
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const errors = state?.errors ?? {};
 
+  function inputProps(name: FieldName) {
+    return {
+      value: values[name],
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        setValues((current) => ({ ...current, [name]: event.target.value }));
+        setTouched((current) => ({ ...current, [name]: true }));
+      },
+      onBlur: () => setTouched((current) => ({ ...current, [name]: true })),
+    };
+  }
+
+  function errorFor(name: FieldName) {
+    if (touched[name]) {
+      return validateField(name, values);
+    }
+
+    return errors[name];
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const nextTouched = Object.fromEntries(
+      Object.keys(initialValues).map((name) => [name, true])
+    ) as Record<FieldName, boolean>;
+
+    setTouched(nextTouched);
+
+    if (Object.keys(initialValues).some((name) => validateField(name as FieldName, values))) {
+      event.preventDefault();
+    }
+  }
+
   return (
-    <form action={action} style={{ display: "grid", gap: "28px" }}>
+    <form action={action} onSubmit={handleSubmit} noValidate style={{ display: "grid", gap: "28px" }}>
       {errors.general && (
         <div style={{
           display: "flex", alignItems: "flex-start", gap: "10px",
@@ -131,12 +215,12 @@ export default function RegisterForm() {
         title="Personal identity"
         description="Use the name and contact number you want to appear in agreements you create or sign."
       >
-        <Field label="Full legal name" htmlFor="name" error={errors.name}>
-          <input style={inputStyle} type="text" name="name" id="name" placeholder="Maria Santos" autoComplete="name" />
+        <Field label="Full legal name" htmlFor="name" error={errorFor("name")}>
+          <input {...inputProps("name")} style={inputStyle} type="text" name="name" id="name" placeholder="Maria Santos" autoComplete="name" />
         </Field>
 
-        <Field label="Mobile number" htmlFor="mobileNumber" error={errors.mobileNumber} hint="This helps identify and contact the correct party.">
-          <input style={inputStyle} type="tel" name="mobileNumber" id="mobileNumber" placeholder="09XX XXX XXXX" autoComplete="tel" />
+        <Field label="Mobile number" htmlFor="mobileNumber" error={errorFor("mobileNumber")} hint="This helps identify and contact the correct party.">
+          <input {...inputProps("mobileNumber")} style={inputStyle} type="tel" name="mobileNumber" id="mobileNumber" placeholder="09XX XXX XXXX" autoComplete="tel" />
         </Field>
       </Section>
 
@@ -144,27 +228,27 @@ export default function RegisterForm() {
         title="Registered address"
         description="This location can be reused in agreement party details so creators do not need to type it again."
       >
-        <Field label="House no., street, building, or landmark" htmlFor="addressLine" error={errors.addressLine}>
-          <input style={inputStyle} type="text" name="addressLine" id="addressLine" placeholder="Unit 2, 123 Mabini Street" autoComplete="address-line1" />
+        <Field label="House no., street, building, or landmark" htmlFor="addressLine" error={errorFor("addressLine")}>
+          <input {...inputProps("addressLine")} style={inputStyle} type="text" name="addressLine" id="addressLine" placeholder="Unit 2, 123 Mabini Street" autoComplete="address-line1" />
         </Field>
 
         <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <Field label="Barangay" htmlFor="barangay" error={errors.barangay}>
-            <input style={inputStyle} type="text" name="barangay" id="barangay" placeholder="Barangay San Antonio" autoComplete="address-line2" />
+          <Field label="Barangay" htmlFor="barangay" error={errorFor("barangay")}>
+            <input {...inputProps("barangay")} style={inputStyle} type="text" name="barangay" id="barangay" placeholder="Barangay San Antonio" autoComplete="address-line2" />
           </Field>
 
-          <Field label="City / Municipality" htmlFor="cityMunicipality" error={errors.cityMunicipality}>
-            <input style={inputStyle} type="text" name="cityMunicipality" id="cityMunicipality" placeholder="Quezon City" autoComplete="address-level2" />
+          <Field label="City / Municipality" htmlFor="cityMunicipality" error={errorFor("cityMunicipality")}>
+            <input {...inputProps("cityMunicipality")} style={inputStyle} type="text" name="cityMunicipality" id="cityMunicipality" placeholder="Quezon City" autoComplete="address-level2" />
           </Field>
         </div>
 
         <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <Field label="Province" htmlFor="province" error={errors.province}>
-            <input style={inputStyle} type="text" name="province" id="province" placeholder="Metro Manila" autoComplete="address-level1" />
+          <Field label="Province" htmlFor="province" error={errorFor("province")}>
+            <input {...inputProps("province")} style={inputStyle} type="text" name="province" id="province" placeholder="Metro Manila" autoComplete="address-level1" />
           </Field>
 
-          <Field label="Postal code" htmlFor="postalCode" error={errors.postalCode}>
-            <input style={inputStyle} type="text" name="postalCode" id="postalCode" placeholder="1100" autoComplete="postal-code" />
+          <Field label="Postal code" htmlFor="postalCode" error={errorFor("postalCode")}>
+            <input {...inputProps("postalCode")} style={inputStyle} type="text" name="postalCode" id="postalCode" placeholder="1100" autoComplete="postal-code" />
           </Field>
         </div>
       </Section>
@@ -173,17 +257,17 @@ export default function RegisterForm() {
         title="Account security"
         description="Keep email and password together because these are the credentials used to access your account."
       >
-        <Field label="Email address" htmlFor="email" error={errors.email}>
-          <input style={inputStyle} type="email" name="email" id="email" placeholder="maria@example.com" autoComplete="email" />
+        <Field label="Email address" htmlFor="email" error={errorFor("email")}>
+          <input {...inputProps("email")} style={inputStyle} type="email" name="email" id="email" placeholder="maria@example.com" autoComplete="email" />
         </Field>
 
         <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <Field label="Password" htmlFor="password" error={errors.password}>
-            <input style={inputStyle} type="password" name="password" id="password" placeholder="At least 8 characters" autoComplete="new-password" />
+          <Field label="Password" htmlFor="password" error={errorFor("password")}>
+            <input {...inputProps("password")} style={inputStyle} type="password" name="password" id="password" placeholder="At least 12 characters" autoComplete="new-password" />
           </Field>
 
-          <Field label="Confirm password" htmlFor="confirmPassword" error={errors.confirmPassword}>
-            <input style={inputStyle} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" autoComplete="new-password" />
+          <Field label="Confirm password" htmlFor="confirmPassword" error={errorFor("confirmPassword")}>
+            <input {...inputProps("confirmPassword")} style={inputStyle} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" autoComplete="new-password" />
           </Field>
         </div>
       </Section>
