@@ -3,7 +3,7 @@ import RegisterForm from "./RegisterForm";
 
 export default async function RegisterUserPage() {
   return (
-    <main style={{
+    <main className="brand-gradient-page" style={{
       minHeight: "calc(100vh - 100px)",
       background: "linear-gradient(135deg, #005461 0%, #0C7779 40%, #249E94 75%, #3BC1A8 100%)",
       padding: "40px 32px 56px",

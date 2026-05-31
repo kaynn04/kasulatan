@@ -169,12 +169,12 @@ function PartyCard({ party, title }: { party: AgreementParty | undefined; title:
       )}
 
       {party.signatureImage && (
-        <div style={{
+        <div className="signature-paper" style={{
           marginTop: "14px",
           border: "1px dashed #cbd5e1",
           borderRadius: "14px",
           padding: "12px",
-          background: "#fbfdff",
+          background: "white",
         }}>
           <p style={{ margin: "0 0 8px", color: "#64748b", fontSize: "12px", fontWeight: 900 }}>
             Signature mark
@@ -428,7 +428,7 @@ export default async function AgreementDetailsPage({
               )}
             </div>
 
-            <div style={{
+            <div className="warning-surface" style={{
               background: "#fff7ed",
               border: "1px solid #fed7aa",
               borderRadius: "16px",

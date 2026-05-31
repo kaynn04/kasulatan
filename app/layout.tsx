@@ -13,8 +13,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var storedTheme = localStorage.getItem("kasulatan-theme");
+                var systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+                var theme = storedTheme || systemTheme;
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+              } catch (_) {}
+            `,
+          }}
+        />
         <Navbar />
         {children}
       </body>

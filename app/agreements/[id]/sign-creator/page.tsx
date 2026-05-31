@@ -217,7 +217,7 @@ export default async function SignCreatorAgreementPage({
               <SignCreatorForm agreementId={agreement.id} creatorName={creator.fullName} />
             </div>
 
-            <div style={reviewNoteStyle}>
+            <div className="warning-surface" style={reviewNoteStyle}>
               <p style={{ margin: "0 0 8px", color: "#7c2d12", fontSize: "16px", fontWeight: 900 }}>
                 Final check
               </p>

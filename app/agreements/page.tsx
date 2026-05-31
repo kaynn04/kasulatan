@@ -192,7 +192,7 @@ function AgreementCard({
             }}>
               {agreement.agreementType}
             </span>
-            <span style={{
+            <span className={isActionNeeded ? "agreement-status-pill agreement-status-pill-warning" : "agreement-status-pill"} style={{
               color: isActionNeeded ? "#92400e" : "#475569",
               background: isActionNeeded ? "#FEF3C7" : "#f1f5f9",
               borderRadius: "999px",
@@ -504,14 +504,14 @@ export default async function AgreementsPage({ searchParams }: { searchParams: S
         </nav>
 
         {attentionAgreements.length > 0 && activeTab !== "attention" && (
-          <section style={{
+          <section className="warning-surface" style={{
             background: "#fff7ed",
             border: "1px solid #fed7aa",
             borderRadius: "16px",
             padding: "18px",
             marginBottom: "24px",
           }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "14px" }}>
+            <div className="warning-surface-heading" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", marginBottom: "14px" }}>
               <div>
                 <h2 style={{ margin: "0 0 4px", color: "#7c2d12", fontSize: "17px", fontWeight: 900 }}>
                   Needs attention

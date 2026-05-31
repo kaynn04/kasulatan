@@ -110,14 +110,16 @@ function PartySection({ party, title }: { party: AgreementParty | undefined; tit
             </p>
           )}
           {party.signatureImage && (
-            <Image
-              src={party.signatureImage}
-              alt={`${party.fullName} signature mark`}
-              width={420}
-              height={120}
-              unoptimized
-              style={{ width: "100%", maxWidth: "360px", maxHeight: "90px", objectFit: "contain" }}
-            />
+            <span className="signature-paper signature-paper-inline">
+              <Image
+                src={party.signatureImage}
+                alt={`${party.fullName} signature mark`}
+                width={420}
+                height={120}
+                unoptimized
+                style={{ width: "100%", maxWidth: "360px", maxHeight: "90px", objectFit: "contain" }}
+              />
+            </span>
           )}
         </div>
       )}
@@ -190,7 +192,7 @@ export default async function AgreementSummaryPage({
         </div>
 
         {!isFinalized && (
-          <div style={{
+          <div className="warning-surface" style={{
             marginBottom: "18px",
             border: "1px solid #fed7aa",
             background: "#fff7ed",
@@ -241,7 +243,7 @@ export default async function AgreementSummaryPage({
                 A printable summary of the agreement record, parties, signatures, and audit trail.
               </p>
             </div>
-            <div style={{
+            <div className="brand-tint-surface" style={{
               border: "1px solid #B7F7EC",
               background: "#E6FFFA",
               borderRadius: "14px",

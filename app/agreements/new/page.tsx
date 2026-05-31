@@ -133,7 +133,7 @@ export default async function NewAgreementsPage() {
               </div>
             </div>
 
-            <div style={{
+            <div className="warning-surface" style={{
               background: "#fff7ed",
               border: "1px solid #fed7aa",
               borderRadius: "16px",

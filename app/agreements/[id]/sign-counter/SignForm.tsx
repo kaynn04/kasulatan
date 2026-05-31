@@ -181,6 +181,7 @@ export default function SignForm({
           <div style={{ display: "grid", gap: "10px" }}>
             <canvas
               ref={canvasRef}
+              className="signature-paper"
               width={720}
               height={240}
               onPointerDown={startDrawing}
@@ -190,7 +191,7 @@ export default function SignForm({
               style={canvasStyle}
               aria-label="Draw signature"
             />
-            <button type="button" onClick={clearSignature} style={secondaryButtonStyle}>
+            <button className="signature-secondary-button" type="button" onClick={clearSignature} style={secondaryButtonStyle}>
               Clear signature
             </button>
           </div>
@@ -202,7 +203,7 @@ export default function SignForm({
         )}
 
         {signatureImage && (
-          <div style={previewStyle}>
+          <div className="signature-paper" style={previewStyle}>
             <span style={{ color: "#64748b", fontSize: "12px", fontWeight: 900, textTransform: "uppercase" }}>
               Preview
             </span>

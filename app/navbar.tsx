@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import Logout from "@/components/Logout";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const authenticatedLinks = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/agreements", label: "Agreements" },
-  { href: "/agreements/new", label: "New" },
 ];
 
 function NavLink({ href, label }: { href: string; label: string }) {
@@ -49,7 +49,7 @@ export default async function Navbar() {
       backdropFilter: "blur(12px)",
     }}>
       <div className="site-header-inner">
-        <Link href="/" className="site-brand-link" style={{ textDecoration: "none" }}>
+        <Link href="/dashboard" className="site-brand-link" style={{ textDecoration: "none" }}>
           <span className="site-brand-mark">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -75,6 +75,7 @@ export default async function Navbar() {
         )}
 
         <div className="site-header-actions">
+          <ThemeToggle />
           {session ? (
             <>
               <div className="site-user-chip">

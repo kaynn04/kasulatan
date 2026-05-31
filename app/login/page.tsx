@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function LoginPage() {
   return (
-    <main style={{
+    <main className="brand-gradient-page" style={{
       minHeight: "calc(100vh - 64px)",
       padding: 0,
       margin: 0,

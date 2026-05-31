@@ -20,7 +20,7 @@ export default async function HomePage() {
   ];
 
   return (
-    <main style={{
+    <main className="brand-gradient-page" style={{
       minHeight: "calc(100vh - 100px)",
       padding: 0,
       margin: 0,

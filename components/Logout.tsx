@@ -12,6 +12,7 @@ export default function Logout({ variant = "light" }: LogoutProps) {
       <button
         type="submit"
         formAction={logoutUser}
+        className="site-logout-button"
         style={{
           display: "inline-flex",
           alignItems: "center",
