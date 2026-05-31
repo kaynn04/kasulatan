@@ -70,21 +70,38 @@ function ensureRoom(doc: PDFKit.PDFDocument, height = 80) {
   }
 }
 
+function contentWidth(doc: PDFKit.PDFDocument) {
+  return doc.page.width - doc.page.margins.left - doc.page.margins.right;
+}
+
 function sectionTitle(doc: PDFKit.PDFDocument, title: string) {
   ensureRoom(doc, 46);
-  doc.moveDown(0.8);
+  const x = doc.page.margins.left;
+  const width = contentWidth(doc);
+  const y = doc.y + 9;
+
   doc
     .font("Helvetica-Bold")
     .fontSize(13)
     .fillColor("#111827")
-    .text(title);
+    .text(title, x, y, { width });
+
+  const lineY = doc.y + 6;
   doc
-    .moveTo(doc.page.margins.left, doc.y + 6)
-    .lineTo(doc.page.width - doc.page.margins.right, doc.y + 6)
+    .moveTo(x, lineY)
+    .lineTo(doc.page.width - doc.page.margins.right, lineY)
     .strokeColor("#dbe3ef")
     .lineWidth(1)
     .stroke();
-  doc.moveDown(0.8);
+  doc.y = lineY + 13;
+}
+
+function bodyText(doc: PDFKit.PDFDocument, value: string) {
+  doc
+    .font("Helvetica")
+    .fontSize(10)
+    .fillColor("#334155")
+    .text(value, doc.page.margins.left, doc.y, { width: contentWidth(doc), lineGap: 3 });
 }
 
 function keyValue(doc: PDFKit.PDFDocument, label: string, value: string, x: number, y: number, width: number) {
@@ -104,12 +121,12 @@ function partyBlock(doc: PDFKit.PDFDocument, title: string, party: AgreementPart
   sectionTitle(doc, title);
 
   if (!party) {
-    doc.font("Helvetica").fontSize(10).fillColor("#334155").text("No party information available.");
+    bodyText(doc, "No party information available.");
     return;
   }
 
   const startY = doc.y;
-  const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
+  const pageWidth = contentWidth(doc);
   const colWidth = (pageWidth - 16) / 2;
 
   keyValue(doc, "Full name", party.fullName, doc.page.margins.left, startY, colWidth);
@@ -129,21 +146,32 @@ function partyBlock(doc: PDFKit.PDFDocument, title: string, party: AgreementPart
   doc.y = startY + 148;
 
   if (party.typedSignature || party.signatureImage) {
-    ensureRoom(doc, 120);
-    doc.font("Helvetica-Bold").fontSize(8).fillColor("#64748b").text("SIGNATURE");
+    const signatureX = doc.page.margins.left;
+    const signatureWidth = Math.min(280, contentWidth(doc));
+
+    doc.font("Helvetica-Bold").fontSize(8).fillColor("#64748b").text("SIGNATURE", signatureX, doc.y, {
+      width: signatureWidth,
+    });
 
     if (party.typedSignature) {
-      doc.moveDown(0.2);
-      doc.font("Times-Italic").fontSize(22).fillColor("#0f172a").text(party.typedSignature);
+      doc
+        .font("Times-Italic")
+        .fontSize(22)
+        .fillColor("#0f172a")
+        .text(party.typedSignature, signatureX, doc.y + 3, { width: signatureWidth });
     }
 
     const imageBuffer = signatureBuffer(party.signatureImage);
     if (imageBuffer) {
-      doc.moveDown(0.5);
       try {
-        doc.image(imageBuffer, { fit: [240, 70] });
+        doc.image(imageBuffer, signatureX, doc.y + 6, { fit: [240, 70] });
+        doc.y += 76;
       } catch {
-        doc.font("Helvetica").fontSize(9).fillColor("#64748b").text("Signature image could not be embedded.");
+        doc
+          .font("Helvetica")
+          .fontSize(9)
+          .fillColor("#64748b")
+          .text("Signature image could not be embedded.", signatureX, doc.y + 6, { width: signatureWidth });
       }
     }
   }
@@ -171,25 +199,38 @@ async function createPdf(agreement: AgreementSummary) {
   const counterparty = getParty(agreement, "COUNTERPARTY");
   const isFinalized = agreement.status === "FINALIZED";
 
-  doc.rect(0, 0, doc.page.width, 132).fill("#005461");
+  const headerX = 46;
+  const headerTop = 34;
+  const titleY = 54;
+  const titleWidth = 360;
+  const statusCardY = 34;
+  const statusCardHeight = 62;
+  const titleHeight = doc.font("Times-Bold").fontSize(26).heightOfString(agreement.title, {
+    width: titleWidth,
+    lineGap: 2,
+  });
+  const taglineY = titleY + titleHeight + 8;
+  const headerHeight = Math.max(132, taglineY + 28, statusCardY + statusCardHeight + 24);
+
+  doc.rect(0, 0, doc.page.width, headerHeight).fill("#005461");
   doc
     .font("Helvetica-Bold")
     .fontSize(9)
     .fillColor("#B7F7EC")
-    .text("KASULATAN TRANSACTION SUMMARY", 46, 34);
+    .text("KASULATAN TRANSACTION SUMMARY", headerX, headerTop);
   doc
     .font("Times-Bold")
     .fontSize(26)
     .fillColor("white")
-    .text(agreement.title, 46, 54, { width: 360, lineGap: 2 });
+    .text(agreement.title, headerX, titleY, { width: titleWidth, lineGap: 2 });
   doc
     .font("Helvetica")
     .fontSize(9)
     .fillColor("#d7fffa")
-    .text("Printable agreement record, signatures, and audit trail.", 46, 106);
+    .text("Printable agreement record, signatures, and audit trail.", headerX, taglineY, { width: titleWidth });
 
   doc
-    .roundedRect(430, 34, 118, 62, 8)
+    .roundedRect(430, statusCardY, 118, statusCardHeight, 8)
     .fill("#E6FFFA");
   doc
     .font("Helvetica-Bold")
@@ -202,7 +243,7 @@ async function createPdf(agreement: AgreementSummary) {
     .fillColor("#005461")
     .text(isFinalized ? "Finalized" : agreement.status.replaceAll("_", " "), 444, 66, { width: 86 });
 
-  doc.y = 156;
+  doc.y = headerHeight + 24;
 
   sectionTitle(doc, "Agreement details");
   const pageWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -217,13 +258,13 @@ async function createPdf(agreement: AgreementSummary) {
   doc.y = detailY + 104;
 
   sectionTitle(doc, "Subject matter");
-  doc.font("Helvetica").fontSize(10).fillColor("#334155").text(agreement.subjectMatter, { lineGap: 3 });
+  bodyText(doc, agreement.subjectMatter);
 
   sectionTitle(doc, "Payment terms");
-  doc.font("Helvetica").fontSize(10).fillColor("#334155").text(agreement.paymentTerms, { lineGap: 3 });
+  bodyText(doc, agreement.paymentTerms);
 
   sectionTitle(doc, "Agreement terms");
-  doc.font("Helvetica").fontSize(10).fillColor("#334155").text(agreement.termsText, { lineGap: 3 });
+  bodyText(doc, agreement.termsText);
 
   ensureRoom(doc, 220);
   partyBlock(doc, "Creator", creator);
@@ -241,18 +282,20 @@ async function createPdf(agreement: AgreementSummary) {
       doc.y = y + 36;
     });
   } else {
-    doc.font("Helvetica").fontSize(10).fillColor("#334155").text("No activity recorded.");
+    bodyText(doc, "No activity recorded.");
   }
 
   ensureRoom(doc, 52);
-  doc.moveDown(1);
+  doc.y += 12;
   doc
     .font("Helvetica")
     .fontSize(8)
     .fillColor("#64748b")
     .text(
       `Generated from Kasulatan on ${formatDateTime(new Date())}. This PDF is a convenience copy of the agreement record and should be reviewed together with the full agreement details.`,
-      { lineGap: 2 }
+      doc.page.margins.left,
+      doc.y,
+      { width: contentWidth(doc), lineGap: 2 }
     );
 
   doc.end();
