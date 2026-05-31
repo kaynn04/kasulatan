@@ -88,10 +88,10 @@ One reusable function that answers: "Who is the current user?"
 
 **The flow inside `getSession()`:**
 1. Read the cookie store (`await cookies()` — async in Next.js 16)
-2. Get the `sessionId` cookie value
+2. Get the `kasulatanSession` cookie value
 3. If no cookie → return `null` (not logged in)
-4. Use the cookie value to look up the user in DB (`prisma.user.findUnique`)
-5. Return the user object (id, name, email) or `null`
+4. Hash the random cookie token and look up its server-side session record
+5. Confirm the session has not expired, then return its related user or `null`
 
 **Why a helper?**
 - Every protected page needs this same logic
@@ -108,7 +108,7 @@ One reusable function that answers: "Who is the current user?"
 **Common mistakes to watch for:**
 - Forgetting `await` on `cookies()` (Next.js 16 made it async)
 - Using the wrong cookie name (must match what login sets)
-- Using `where: { sessionId }` instead of `where: { id: sessionId }` (the cookie stores the user ID, not a field called sessionId)
+- Storing a raw user ID in the cookie instead of an unpredictable server-side session token
 
 ---
 
@@ -153,11 +153,11 @@ if (!session) redirect("/login");
 
 **What happens:**
 1. User clicks logout
-2. Server action deletes the `sessionId` cookie
+2. Server action revokes the database session and deletes the `kasulatanSession` cookie
 3. Redirect to login page
 4. Now `getSession()` returns `null` everywhere → user is locked out of protected pages
 
-**That's it.** Logout is just "forget who this person is."
+**That's it.** Logout revokes the active server-side session.
 
 **Where the code lives:**
 - `app/logout/actions.ts` — the server action (delete cookie, redirect)

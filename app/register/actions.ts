@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
+import { consumeRateLimit, getClientIp } from "@/lib/auth-rate-limit";
 import { prisma } from "@/lib/prisma";
 
 type RegisterState = {
@@ -37,6 +38,39 @@ export async function registerUser(
     const confirmPassword = formData.get("confirmPassword") as string;
 
     const errors: RegisterState["errors"] = {};
+    const ipAddress = await getClientIp();
+
+    if (ipAddress) {
+        const registrationAllowed = await consumeRateLimit({
+            scope: "register-ip",
+            identifier: ipAddress,
+            limit: 5,
+            windowSeconds: 60 * 60,
+        });
+
+        if (!registrationAllowed) {
+            return {
+                success: false,
+                errors: { general: "Too many registration attempts. Please try again later." },
+            };
+        }
+    }
+
+    if (email) {
+        const emailAllowed = await consumeRateLimit({
+            scope: "register-email",
+            identifier: email,
+            limit: 3,
+            windowSeconds: 60 * 60,
+        });
+
+        if (!emailAllowed) {
+            return {
+                success: false,
+                errors: { general: "Too many registration attempts. Please try again later." },
+            };
+        }
+    }
 
     if (!name) errors.name = "Full legal name is required.";
     if (!email) {
@@ -53,8 +87,8 @@ export async function registerUser(
 
     if (!password) {
         errors.password = "Password is required.";
-    } else if (password.length < 8) {
-        errors.password = "Password must be at least 8 characters long.";
+    } else if (password.length < 12) {
+        errors.password = "Password must be at least 12 characters long.";
     }
 
     if (!confirmPassword) {
@@ -75,26 +109,35 @@ export async function registerUser(
         return {
             success: false,
             errors: {
-                email: "An account with this email already exists.",
+                general: "Unable to create an account with these details. If you already registered, sign in instead.",
             },
         };
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await prisma.user.create({
-        data: {
-            name,
-            email,
-            mobileNumber,
-            addressLine,
-            barangay,
-            cityMunicipality,
-            province,
-            postalCode,
-            passwordHash,
-        },
-    });
+    try {
+        await prisma.user.create({
+            data: {
+                name,
+                email,
+                mobileNumber,
+                addressLine,
+                barangay,
+                cityMunicipality,
+                province,
+                postalCode,
+                passwordHash,
+            },
+        });
+    } catch {
+        return {
+            success: false,
+            errors: {
+                general: "Unable to create an account with these details. If you already registered, sign in instead.",
+            },
+        };
+    }
 
     redirect("/login");
 }
