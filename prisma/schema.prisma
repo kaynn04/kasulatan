@@ -12,12 +12,18 @@ model User {
   name              String
   email             String           @unique
   mobileNumber      String?
+  addressLine       String?
+  barangay          String?
+  cityMunicipality  String?
+  province          String?
+  postalCode        String?
   passwordHash      String
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
   createdAgreements Agreement[]      @relation("createdAgreements")
   agreementParties  AgreementParty[]
   auditLogs         AuditLog[]
+  sessions          Session[]
 }
 
 model Agreement {
@@ -51,6 +57,7 @@ model AgreementParty {
   mobileNumber                   String?
   address                        String?
   typedSignature                 String?
+  signatureImage                 String?
   consentedToElectronicSignature Boolean            @default(false)
   confirmedReadAgreement         Boolean            @default(false)
   signedAt                       DateTime?
@@ -99,4 +106,26 @@ model AuditLog {
 
   agreement Agreement @relation(fields: [agreementId], references: [id])
   actor     User      @relation(fields: [actorUserId], references: [id])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model AuthRateLimit {
+  key       String   @id
+  attempts  Int      @default(0)
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+
+  @@index([resetAt])
 }

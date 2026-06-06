@@ -1,10 +1,10 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { redirect } from "next/navigation";
+import { consumeRateLimit, getClientIp } from "@/lib/auth-rate-limit";
+import { prisma } from "@/lib/prisma";
 
-// The type lives here but NOT exported, because it's only relevant to this file.
 type RegisterState = {
     success: boolean;
     errors: {
@@ -13,7 +13,12 @@ type RegisterState = {
         password?: string;
         mobileNumber?: string;
         confirmPassword?: string;
-        general?: string; // for any other errors that don't fit the above categories
+        addressLine?: string;
+        barangay?: string;
+        cityMunicipality?: string;
+        province?: string;
+        postalCode?: string;
+        general?: string;
     };
 };
 
@@ -21,40 +26,81 @@ export async function registerUser(
     prevState: RegisterState,
     formData: FormData
 ): Promise<RegisterState> {
-    // --- STEP 1: Extract form values ---
     const name = (formData.get("name") as string)?.trim();
-    const email = (formData.get("email") as string)?.trim();
+    const email = (formData.get("email") as string)?.trim().toLowerCase();
     const mobileNumber = (formData.get("mobileNumber") as string)?.trim();
+    const addressLine = (formData.get("addressLine") as string)?.trim();
+    const barangay = (formData.get("barangay") as string)?.trim();
+    const cityMunicipality = (formData.get("cityMunicipality") as string)?.trim();
+    const province = (formData.get("province") as string)?.trim();
+    const postalCode = (formData.get("postalCode") as string)?.trim();
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirmPassword") as string;
 
-    // --- STEP 2: Validate form input ---
     const errors: RegisterState["errors"] = {};
+    const ipAddress = await getClientIp();
 
-    if (!name) {
-        errors.name = "Name is required.";
+    if (ipAddress) {
+        const registrationAllowed = await consumeRateLimit({
+            scope: "register-ip",
+            identifier: ipAddress,
+            limit: 5,
+            windowSeconds: 60 * 60,
+        });
+
+        if (!registrationAllowed) {
+            return {
+                success: false,
+                errors: { general: "Too many registration attempts. Please try again later." },
+            };
+        }
     }
+
+    if (email) {
+        const emailAllowed = await consumeRateLimit({
+            scope: "register-email",
+            identifier: email,
+            limit: 3,
+            windowSeconds: 60 * 60,
+        });
+
+        if (!emailAllowed) {
+            return {
+                success: false,
+                errors: { general: "Too many registration attempts. Please try again later." },
+            };
+        }
+    }
+
+    if (!name) errors.name = "Full legal name is required.";
     if (!email) {
         errors.email = "Email is required.";
+    } else if (!email.includes("@")) {
+        errors.email = "Enter a valid email address.";
     }
-    if (!mobileNumber) {
-        errors.mobileNumber = "Mobile number is required.";
-    }
+    if (!mobileNumber) errors.mobileNumber = "Mobile number is required.";
+    if (!addressLine) errors.addressLine = "House number, street, or landmark is required.";
+    if (!barangay) errors.barangay = "Barangay is required.";
+    if (!cityMunicipality) errors.cityMunicipality = "City or municipality is required.";
+    if (!province) errors.province = "Province is required.";
+    if (!postalCode) errors.postalCode = "Postal code is required.";
+
     if (!password) {
         errors.password = "Password is required.";
-    } else if (password.length < 8) {
-        errors.password = "Password must be at least 8 characters long.";
+    } else if (password.length < 12) {
+        errors.password = "Password must be at least 12 characters long.";
     }
-    if (confirmPassword !== password) {
+
+    if (!confirmPassword) {
+        errors.confirmPassword = "Please confirm your password.";
+    } else if (confirmPassword !== password) {
         errors.confirmPassword = "Passwords do not match.";
     }
+
     if (Object.keys(errors).length > 0) {
         return { success: false, errors };
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // --- STEP 3: Check if user already exists ---
     const userExists = await prisma.user.findUnique({
         where: { email },
     });
@@ -62,23 +108,36 @@ export async function registerUser(
     if (userExists) {
         return {
             success: false,
-            errors: { 
-                email: "An account with this email already exists."
-            }
-        }
+            errors: {
+                general: "Unable to create an account with these details. If you already registered, sign in instead.",
+            },
+        };
     }
 
-    // --- STEP 4: Create the user ---
-    await prisma.user.create({
-        data: {
-            name,
-            email,
-            mobileNumber,
-            passwordHash,
-            
-        }
-    });
+    const passwordHash = await bcrypt.hash(password, 10);
 
-    // redirect to login page after successful registration
+    try {
+        await prisma.user.create({
+            data: {
+                name,
+                email,
+                mobileNumber,
+                addressLine,
+                barangay,
+                cityMunicipality,
+                province,
+                postalCode,
+                passwordHash,
+            },
+        });
+    } catch {
+        return {
+            success: false,
+            errors: {
+                general: "Unable to create an account with these details. If you already registered, sign in instead.",
+            },
+        };
+    }
+
     redirect("/login");
 }

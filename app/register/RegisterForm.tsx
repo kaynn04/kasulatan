@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { registerUser } from "./actions";
 
 type RegisterState = {
@@ -11,6 +11,11 @@ type RegisterState = {
     mobileNumber?: string;
     password?: string;
     confirmPassword?: string;
+    addressLine?: string;
+    barangay?: string;
+    cityMunicipality?: string;
+    province?: string;
+    postalCode?: string;
     general?: string;
   };
 };
@@ -20,38 +25,94 @@ const initialState: RegisterState = {
   errors: {},
 };
 
+type FieldName = Exclude<keyof RegisterState["errors"], "general">;
+type FormValues = Record<FieldName, string>;
+
+const initialValues: FormValues = {
+  name: "",
+  email: "",
+  mobileNumber: "",
+  password: "",
+  confirmPassword: "",
+  addressLine: "",
+  barangay: "",
+  cityMunicipality: "",
+  province: "",
+  postalCode: "",
+};
+
+function validateField(name: FieldName, values: FormValues) {
+  const value = values[name].trim();
+
+  if (!value) {
+    const requiredMessages: Record<FieldName, string> = {
+      name: "Full legal name is required.",
+      email: "Email is required.",
+      mobileNumber: "Mobile number is required.",
+      password: "Password is required.",
+      confirmPassword: "Please confirm your password.",
+      addressLine: "House number, street, or landmark is required.",
+      barangay: "Barangay is required.",
+      cityMunicipality: "City or municipality is required.",
+      province: "Province is required.",
+      postalCode: "Postal code is required.",
+    };
+
+    return requiredMessages[name];
+  }
+
+  if (name === "email" && !value.includes("@")) {
+    return "Enter a valid email address.";
+  }
+
+  if (name === "password" && values.password.length < 12) {
+    return "Password must be at least 12 characters long.";
+  }
+
+  if (name === "confirmPassword" && values.confirmPassword !== values.password) {
+    return "Passwords do not match.";
+  }
+
+  return undefined;
+}
+
 function Field({
   label,
   htmlFor,
   error,
+  hint,
   children,
 }: {
   label: string;
   htmlFor: string;
   error?: string;
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
       <label
         htmlFor={htmlFor}
         style={{
-          fontSize: "11px",
-          fontWeight: 500,
-          textTransform: "uppercase",
-          letterSpacing: "0.08em",
-          color: "#6b7280",
+          fontSize: "12px",
+          fontWeight: 800,
+          color: "#334155",
         }}
       >
         {label}
       </label>
       {children}
+      {hint && !error && (
+        <p style={{ fontSize: "12px", color: "#64748b", margin: 0, lineHeight: 1.45 }}>
+          {hint}
+        </p>
+      )}
       {error && (
         <p style={{
-          display: "flex", alignItems: "center", gap: "4px",
-          fontSize: "11.5px", color: "#e53e3e", margin: 0,
+          display: "flex", alignItems: "center", gap: "5px",
+          fontSize: "12px", color: "#dc2626", margin: 0,
         }}>
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor">
+          <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
             <path d="M6 0a6 6 0 100 12A6 6 0 006 0zm0 9a.75.75 0 110-1.5A.75.75 0 016 9zm.75-3.75a.75.75 0 01-1.5 0v-2.5a.75.75 0 011.5 0v2.5z" />
           </svg>
           {error}
@@ -61,93 +122,190 @@ function Field({
   );
 }
 
+function Section({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section style={{ display: "grid", gap: "18px" }}>
+      <div>
+        <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: "18px", fontWeight: 900 }}>
+          {title}
+        </h2>
+        <p style={{ margin: 0, color: "#64748b", fontSize: "13px", lineHeight: 1.55 }}>
+          {description}
+        </p>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
   borderRadius: "10px",
-  border: "1.5px solid #e5e7eb",
-  background: "#f9fafb",
-  padding: "10px 14px",
+  border: "1px solid #dbe3ea",
+  background: "white",
+  padding: "11px 12px",
   fontSize: "14px",
-  color: "#111827",
+  color: "#0f172a",
   outline: "none",
   fontFamily: "inherit",
-  transition: "border-color 0.2s",
   boxSizing: "border-box",
 };
 
 export default function RegisterForm() {
   const [state, action, pending] = useActionState(registerUser, initialState);
+  const [values, setValues] = useState(initialValues);
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
+  const errors = state?.errors ?? {};
+
+  function inputProps(name: FieldName) {
+    return {
+      value: values[name],
+      onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+        setValues((current) => ({ ...current, [name]: event.target.value }));
+        setTouched((current) => ({ ...current, [name]: true }));
+      },
+      onBlur: () => setTouched((current) => ({ ...current, [name]: true })),
+    };
+  }
+
+  function errorFor(name: FieldName) {
+    if (touched[name]) {
+      return validateField(name, values);
+    }
+
+    return errors[name];
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    const nextTouched = Object.fromEntries(
+      Object.keys(initialValues).map((name) => [name, true])
+    ) as Record<FieldName, boolean>;
+
+    setTouched(nextTouched);
+
+    if (Object.keys(initialValues).some((name) => validateField(name as FieldName, values))) {
+      event.preventDefault();
+    }
+  }
 
   return (
-    <form action={action} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-
-      {/* General error */}
-      {state?.errors?.general && (
+    <form action={action} onSubmit={handleSubmit} noValidate style={{ display: "grid", gap: "28px" }}>
+      {errors.general && (
         <div style={{
           display: "flex", alignItems: "flex-start", gap: "10px",
-          borderRadius: "10px", border: "1px solid rgba(229,62,62,0.2)",
-          background: "rgba(229,62,62,0.05)", padding: "12px 14px",
+          borderRadius: "10px", border: "1px solid rgba(220,38,38,0.2)",
+          background: "rgba(220,38,38,0.05)", padding: "12px 14px",
         }}>
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="#e53e3e" style={{ marginTop: "1px", flexShrink: 0 }}>
+          <svg viewBox="0 0 16 16" width="15" height="15" fill="#dc2626" style={{ marginTop: "1px", flexShrink: 0 }} aria-hidden="true">
             <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 12a1 1 0 110-2 1 1 0 010 2zm1-4.5a1 1 0 01-2 0v-3a1 1 0 012 0v3z" />
           </svg>
-          <p style={{ fontSize: "13px", color: "#e53e3e", margin: 0 }}>{state.errors.general}</p>
+          <p style={{ fontSize: "13px", color: "#dc2626", margin: 0 }}>{errors.general}</p>
         </div>
       )}
 
-      <Field label="Full name" htmlFor="name" error={state?.errors?.name}>
-        <input style={inputStyle} type="text" name="name" id="name" placeholder="Jane Smith" />
-      </Field>
-
-      <Field label="Email address" htmlFor="email" error={state?.errors?.email}>
-        <input style={inputStyle} type="email" name="email" id="email" placeholder="jane@example.com" />
-      </Field>
-
-      <Field label="Mobile number" htmlFor="mobileNumber" error={state?.errors?.mobileNumber}>
-        <input style={inputStyle} type="text" name="mobileNumber" id="mobileNumber" placeholder="+63 912 345 6789" />
-      </Field>
-
-      <Field label="Password" htmlFor="password" error={state?.errors?.password}>
-        <input style={inputStyle} type="password" name="password" id="password" placeholder="At least 8 characters" />
-      </Field>
-
-      <Field label="Confirm password" htmlFor="confirmPassword" error={state?.errors?.confirmPassword}>
-        <input style={inputStyle} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter your password" />
-      </Field>
-
-      <button
-        type="submit"
-        disabled={pending}
-        style={{
-          marginTop: "6px",
-          width: "100%",
-          padding: "12px",
-          borderRadius: "10px",
-          border: "none",
-          background: pending ? "#249E94" : "linear-gradient(135deg, #005461, #0C7779)",
-          color: "white",
-          fontSize: "14px",
-          fontWeight: 500,
-          fontFamily: "inherit",
-          cursor: pending ? "not-allowed" : "pointer",
-          opacity: pending ? 0.7 : 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          transition: "opacity 0.2s",
-        }}
+      <Section
+        title="Personal identity"
+        description="Use the name and contact number you want to appear in agreements you create or sign."
       >
-        {pending && (
-          <svg style={{ animation: "spin 1s linear infinite" }} width="16" height="16" viewBox="0 0 24 24"
-            fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-          </svg>
-        )}
-        {pending ? "Registering…" : "Create my account"}
-      </button>
+        <Field label="Full legal name" htmlFor="name" error={errorFor("name")}>
+          <input {...inputProps("name")} style={inputStyle} type="text" name="name" id="name" placeholder="Maria Santos" autoComplete="name" />
+        </Field>
 
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+        <Field label="Mobile number" htmlFor="mobileNumber" error={errorFor("mobileNumber")} hint="This helps identify and contact the correct party.">
+          <input {...inputProps("mobileNumber")} style={inputStyle} type="tel" name="mobileNumber" id="mobileNumber" placeholder="09XX XXX XXXX" autoComplete="tel" />
+        </Field>
+      </Section>
+
+      <Section
+        title="Registered address"
+        description="This location can be reused in agreement party details so creators do not need to type it again."
+      >
+        <Field label="House no., street, building, or landmark" htmlFor="addressLine" error={errorFor("addressLine")}>
+          <input {...inputProps("addressLine")} style={inputStyle} type="text" name="addressLine" id="addressLine" placeholder="Unit 2, 123 Mabini Street" autoComplete="address-line1" />
+        </Field>
+
+        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <Field label="Barangay" htmlFor="barangay" error={errorFor("barangay")}>
+            <input {...inputProps("barangay")} style={inputStyle} type="text" name="barangay" id="barangay" placeholder="Barangay San Antonio" autoComplete="address-line2" />
+          </Field>
+
+          <Field label="City / Municipality" htmlFor="cityMunicipality" error={errorFor("cityMunicipality")}>
+            <input {...inputProps("cityMunicipality")} style={inputStyle} type="text" name="cityMunicipality" id="cityMunicipality" placeholder="Quezon City" autoComplete="address-level2" />
+          </Field>
+        </div>
+
+        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <Field label="Province" htmlFor="province" error={errorFor("province")}>
+            <input {...inputProps("province")} style={inputStyle} type="text" name="province" id="province" placeholder="Metro Manila" autoComplete="address-level1" />
+          </Field>
+
+          <Field label="Postal code" htmlFor="postalCode" error={errorFor("postalCode")}>
+            <input {...inputProps("postalCode")} style={inputStyle} type="text" name="postalCode" id="postalCode" placeholder="1100" autoComplete="postal-code" />
+          </Field>
+        </div>
+      </Section>
+
+      <Section
+        title="Account security"
+        description="Keep email and password together because these are the credentials used to access your account."
+      >
+        <Field label="Email address" htmlFor="email" error={errorFor("email")}>
+          <input {...inputProps("email")} style={inputStyle} type="email" name="email" id="email" placeholder="maria@example.com" autoComplete="email" />
+        </Field>
+
+        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          <Field label="Password" htmlFor="password" error={errorFor("password")}>
+            <input {...inputProps("password")} style={inputStyle} type="password" name="password" id="password" placeholder="At least 12 characters" autoComplete="new-password" />
+          </Field>
+
+          <Field label="Confirm password" htmlFor="confirmPassword" error={errorFor("confirmPassword")}>
+            <input {...inputProps("confirmPassword")} style={inputStyle} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" autoComplete="new-password" />
+          </Field>
+        </div>
+      </Section>
+
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "16px",
+        borderTop: "1px solid #e5e7eb",
+        paddingTop: "22px",
+      }}>
+        <p style={{ margin: 0, color: "#64748b", fontSize: "13px", lineHeight: 1.5 }}>
+          Your profile details will be copied into agreement records when needed.
+        </p>
+        <button
+          type="submit"
+          disabled={pending}
+          style={{
+            minWidth: "180px",
+            padding: "12px 18px",
+            borderRadius: "10px",
+            border: "none",
+            background: pending ? "#249E94" : "#005461",
+            color: "white",
+            fontSize: "14px",
+            fontWeight: 900,
+            fontFamily: "inherit",
+            cursor: pending ? "not-allowed" : "pointer",
+            opacity: pending ? 0.72 : 1,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {pending ? "Creating..." : "Create account"}
+        </button>
+      </div>
     </form>
   );
 }
