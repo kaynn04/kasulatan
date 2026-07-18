@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { consumeRateLimit, getClientIp } from "@/lib/auth-rate-limit";
 import { prisma } from "@/lib/prisma";
+import { formString, isValidEmail, normalizeEmail } from "@/lib/form-validation";
 
 type RegisterState = {
     success: boolean;
@@ -26,16 +27,18 @@ export async function registerUser(
     prevState: RegisterState,
     formData: FormData
 ): Promise<RegisterState> {
-    const name = (formData.get("name") as string)?.trim();
-    const email = (formData.get("email") as string)?.trim().toLowerCase();
-    const mobileNumber = (formData.get("mobileNumber") as string)?.trim();
-    const addressLine = (formData.get("addressLine") as string)?.trim();
-    const barangay = (formData.get("barangay") as string)?.trim();
-    const cityMunicipality = (formData.get("cityMunicipality") as string)?.trim();
-    const province = (formData.get("province") as string)?.trim();
-    const postalCode = (formData.get("postalCode") as string)?.trim();
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+    const name = formString(formData, "name");
+    const email = normalizeEmail(formString(formData, "email"));
+    const mobileNumber = formString(formData, "mobileNumber");
+    const addressLine = formString(formData, "addressLine");
+    const barangay = formString(formData, "barangay");
+    const cityMunicipality = formString(formData, "cityMunicipality");
+    const province = formString(formData, "province");
+    const postalCode = formString(formData, "postalCode");
+    const passwordValue = formData.get("password");
+    const confirmPasswordValue = formData.get("confirmPassword");
+    const password = typeof passwordValue === "string" ? passwordValue : "";
+    const confirmPassword = typeof confirmPasswordValue === "string" ? confirmPasswordValue : "";
 
     const errors: RegisterState["errors"] = {};
     const ipAddress = await getClientIp();
@@ -73,22 +76,31 @@ export async function registerUser(
     }
 
     if (!name) errors.name = "Full legal name is required.";
+    else if (name.length > 120) errors.name = "Full legal name must be 120 characters or fewer.";
     if (!email) {
         errors.email = "Email is required.";
-    } else if (!email.includes("@")) {
+    } else if (!isValidEmail(email)) {
         errors.email = "Enter a valid email address.";
     }
     if (!mobileNumber) errors.mobileNumber = "Mobile number is required.";
+    else if (mobileNumber.length > 30) errors.mobileNumber = "Mobile number must be 30 characters or fewer.";
     if (!addressLine) errors.addressLine = "House number, street, or landmark is required.";
+    else if (addressLine.length > 200) errors.addressLine = "Address must be 200 characters or fewer.";
     if (!barangay) errors.barangay = "Barangay is required.";
+    else if (barangay.length > 100) errors.barangay = "Barangay must be 100 characters or fewer.";
     if (!cityMunicipality) errors.cityMunicipality = "City or municipality is required.";
+    else if (cityMunicipality.length > 100) errors.cityMunicipality = "City or municipality must be 100 characters or fewer.";
     if (!province) errors.province = "Province is required.";
+    else if (province.length > 100) errors.province = "Province must be 100 characters or fewer.";
     if (!postalCode) errors.postalCode = "Postal code is required.";
+    else if (postalCode.length > 12) errors.postalCode = "Postal code must be 12 characters or fewer.";
 
     if (!password) {
         errors.password = "Password is required.";
     } else if (password.length < 12) {
         errors.password = "Password must be at least 12 characters long.";
+    } else if (Buffer.byteLength(password, "utf8") > 72) {
+        errors.password = "Password must be 72 bytes or fewer.";
     }
 
     if (!confirmPassword) {
