@@ -55,13 +55,15 @@ function safeFilename(value: string) {
     .toLowerCase();
 }
 
-function signatureBuffer(signatureImage: string | null) {
+function signatureSource(signatureImage: string | null) {
   if (!signatureImage) return null;
 
-  const match = signatureImage.match(/^data:image\/(?:png|jpeg|jpg|webp);base64,(.+)$/);
-  if (!match) return null;
-
-  return Buffer.from(match[1], "base64");
+  // The standalone PDFKit build uses its own Buffer implementation. Passing a
+  // Node.js Buffer makes valid PNGs look like file paths, while passing the
+  // data URL lets PDFKit decode the image with its compatible Buffer.
+  return /^data:image\/(?:png|jpeg|jpg);base64,[a-z0-9+/]+={0,2}$/i.test(signatureImage)
+    ? signatureImage
+    : null;
 }
 
 function ensureRoom(doc: PDFKit.PDFDocument, height = 80) {
@@ -117,62 +119,144 @@ function keyValue(doc: PDFKit.PDFDocument, label: string, value: string, x: numb
     .text(value, x, y + 14, { width });
 }
 
-function partyBlock(doc: PDFKit.PDFDocument, title: string, party: AgreementParty | undefined) {
-  sectionTitle(doc, title);
+function compactField(
+  doc: PDFKit.PDFDocument,
+  label: string,
+  value: string,
+  x: number,
+  y: number,
+  width: number
+) {
+  doc.font("Helvetica-Bold").fontSize(6.5).fillColor("#64748b").text(label.toUpperCase(), x, y, { width });
+  doc.font("Helvetica-Bold").fontSize(7.5).fillColor("#0f172a").text(value, x, y + 12, {
+    width,
+    lineGap: 1.5,
+  });
+
+  return 12 + doc.heightOfString(value, { width, lineGap: 1.5 });
+}
+
+function partyDetailsHeight(doc: PDFKit.PDFDocument, party: AgreementParty | undefined, width: number) {
+  if (!party) return 94;
+
+  const innerWidth = width - 28;
+  const fieldWidth = (innerWidth - 12) / 2;
+  const fieldRows = [
+    [party.fullName, party.mobileNumber ?? "Not provided"],
+    [party.address ?? "Not provided", formatDateTime(party.signedAt)],
+    [
+      party.confirmedReadAgreement ? "Confirmed" : "Not confirmed",
+      party.consentedToElectronicSignature ? "Consented" : "Not confirmed",
+    ],
+  ];
+
+  doc.font("Helvetica-Bold").fontSize(7.5);
+  const fieldsHeight = fieldRows.reduce((total, row) => {
+    const rowHeight = Math.max(...row.map((value) => 12 + doc.heightOfString(value, { width: fieldWidth, lineGap: 1.5 })));
+    return total + Math.max(34, rowHeight) + 8;
+  }, 0);
+  return 66 + fieldsHeight;
+}
+
+function partyDetailsCard(
+  doc: PDFKit.PDFDocument,
+  title: string,
+  party: AgreementParty | undefined,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  const padding = 14;
+  const innerX = x + padding;
+  const innerWidth = width - padding * 2;
+
+  doc.roundedRect(x, y, width, height, 10).fillAndStroke("#ffffff", "#e5e7eb");
+  doc.font("Helvetica-Bold").fontSize(11).fillColor("#111827").text(title, innerX, y + 15, { width: innerWidth - 54 });
 
   if (!party) {
-    bodyText(doc, "No party information available.");
+    doc.font("Helvetica").fontSize(8).fillColor("#64748b").text("No party information is available.", innerX, y + 42, {
+      width: innerWidth,
+    });
     return;
   }
 
-  const startY = doc.y;
-  const pageWidth = contentWidth(doc);
-  const colWidth = (pageWidth - 16) / 2;
-
-  keyValue(doc, "Full name", party.fullName, doc.page.margins.left, startY, colWidth);
-  keyValue(doc, "Email", party.email, doc.page.margins.left + colWidth + 16, startY, colWidth);
-  keyValue(doc, "Mobile", party.mobileNumber ?? "Not provided", doc.page.margins.left, startY + 48, colWidth);
-  keyValue(doc, "Address", party.address ?? "Not provided", doc.page.margins.left + colWidth + 16, startY + 48, colWidth);
-  keyValue(doc, "Signed at", formatDateTime(party.signedAt), doc.page.margins.left, startY + 96, colWidth);
-  keyValue(
-    doc,
-    "E-signature consent",
-    party.consentedToElectronicSignature ? "Consented" : "Not confirmed",
-    doc.page.margins.left + colWidth + 16,
-    startY + 96,
-    colWidth
+  doc.font("Helvetica-Bold").fontSize(6.5).fillColor(party.signedAt ? "#0f5267" : "#92400e").text(
+    party.signedAt ? "SIGNED" : "NOT SIGNED",
+    x + width - 65,
+    y + 17,
+    { width: 51, align: "right" }
   );
+  doc.font("Helvetica").fontSize(7).fillColor("#64748b").text(party.email, innerX, y + 34, { width: innerWidth });
 
-  doc.y = startY + 148;
+  const fieldWidth = (innerWidth - 12) / 2;
+  let fieldY = y + 58;
+  const rows: Array<[[string, string], [string, string]]> = [
+    [["Full name", party.fullName], ["Mobile", party.mobileNumber ?? "Not provided"]],
+    [["Address", party.address ?? "Not provided"], ["Signed at", formatDateTime(party.signedAt)]],
+    [
+      ["Read agreement", party.confirmedReadAgreement ? "Confirmed" : "Not confirmed"],
+      ["E-signature consent", party.consentedToElectronicSignature ? "Consented" : "Not confirmed"],
+    ],
+  ];
 
-  if (party.typedSignature || party.signatureImage) {
-    const signatureX = doc.page.margins.left;
-    const signatureWidth = Math.min(280, contentWidth(doc));
+  for (const row of rows) {
+    const leftHeight = compactField(doc, row[0][0], row[0][1], innerX, fieldY, fieldWidth);
+    const rightHeight = compactField(doc, row[1][0], row[1][1], innerX + fieldWidth + 12, fieldY, fieldWidth);
+    const rowHeight = Math.max(34, leftHeight, rightHeight);
+    const lineY = fieldY + rowHeight + 2;
+    doc.moveTo(innerX, lineY).lineTo(innerX + fieldWidth, lineY).strokeColor("#e5e7eb").lineWidth(0.7).stroke();
+    doc.moveTo(innerX + fieldWidth + 12, lineY).lineTo(innerX + innerWidth, lineY).stroke();
+    fieldY = lineY + 9;
+  }
+}
 
-    doc.font("Helvetica-Bold").fontSize(8).fillColor("#64748b").text("SIGNATURE", signatureX, doc.y, {
-      width: signatureWidth,
+function partySignatureCard(
+  doc: PDFKit.PDFDocument,
+  party: AgreementParty | undefined,
+  x: number,
+  y: number,
+  width: number,
+  height: number
+) {
+  const padding = 14;
+  const innerX = x + padding;
+  const innerWidth = width - padding * 2;
+
+  doc.roundedRect(x, y, width, height, 10).fillAndStroke("#ffffff", "#e5e7eb");
+  doc.font("Helvetica-Bold").fontSize(6.5).fillColor("#64748b").text("SIGNATURE", innerX, y + 14, { width: innerWidth });
+
+  if (!party || (!party.typedSignature && !party.signatureImage)) {
+    doc.font("Helvetica").fontSize(8).fillColor("#64748b").text("No signature recorded.", innerX, y + 35, {
+      width: innerWidth,
     });
+    return;
+  }
 
-    if (party.typedSignature) {
-      doc
-        .font("Times-Italic")
-        .fontSize(22)
-        .fillColor("#0f172a")
-        .text(party.typedSignature, signatureX, doc.y + 3, { width: signatureWidth });
-    }
+  let signatureY = y + 28;
+  if (party.typedSignature) {
+    doc.font("Times-Italic").fontSize(18).fillColor("#0f172a").text(party.typedSignature, innerX, signatureY, {
+      width: innerWidth,
+      height: 25,
+    });
+    signatureY += 31;
+  }
 
-    const imageBuffer = signatureBuffer(party.signatureImage);
-    if (imageBuffer) {
-      try {
-        doc.image(imageBuffer, signatureX, doc.y + 6, { fit: [240, 70] });
-        doc.y += 76;
-      } catch {
-        doc
-          .font("Helvetica")
-          .fontSize(9)
-          .fillColor("#64748b")
-          .text("Signature image could not be embedded.", signatureX, doc.y + 6, { width: signatureWidth });
-      }
+  const imageSource = signatureSource(party.signatureImage);
+  if (imageSource) {
+    const paperHeight = 58;
+    doc.save().roundedRect(innerX, signatureY, innerWidth, paperHeight, 7).dash(3, { space: 3 }).strokeColor("#cbd5e1").stroke().restore();
+    try {
+      doc.image(imageSource, innerX + 7, signatureY + 7, {
+        fit: [innerWidth - 14, paperHeight - 14],
+        align: "center",
+        valign: "center",
+      });
+    } catch {
+      doc.font("Helvetica").fontSize(7).fillColor("#64748b").text("Signature image could not be embedded.", innerX + 8, signatureY + 22, {
+        width: innerWidth - 16,
+        align: "center",
+      });
     }
   }
 }
@@ -212,11 +296,11 @@ async function createPdf(agreement: AgreementSummary) {
   const taglineY = titleY + titleHeight + 8;
   const headerHeight = Math.max(132, taglineY + 28, statusCardY + statusCardHeight + 24);
 
-  doc.rect(0, 0, doc.page.width, headerHeight).fill("#005461");
+  doc.rect(0, 0, doc.page.width, headerHeight).fill("#0f354f");
   doc
     .font("Helvetica-Bold")
     .fontSize(9)
-    .fillColor("#B7F7EC")
+    .fillColor("#efb642")
     .text("KASULATAN TRANSACTION SUMMARY", headerX, headerTop);
   doc
     .font("Times-Bold")
@@ -226,21 +310,21 @@ async function createPdf(agreement: AgreementSummary) {
   doc
     .font("Helvetica")
     .fontSize(9)
-    .fillColor("#d7fffa")
+    .fillColor("#d8e3ea")
     .text("Printable agreement record, signatures, and audit trail.", headerX, taglineY, { width: titleWidth });
 
   doc
     .roundedRect(430, statusCardY, 118, statusCardHeight, 8)
-    .fill("#E6FFFA");
+    .fill("#fae9ba");
   doc
     .font("Helvetica-Bold")
     .fontSize(8)
-    .fillColor("#005461")
+    .fillColor("#704c05")
     .text("STATUS", 444, 48);
   doc
     .font("Helvetica-Bold")
     .fontSize(15)
-    .fillColor("#005461")
+    .fillColor("#704c05")
     .text(isFinalized ? "Finalized" : agreement.status.replaceAll("_", " "), 444, 66, { width: 86 });
 
   doc.y = headerHeight + 24;
@@ -266,10 +350,39 @@ async function createPdf(agreement: AgreementSummary) {
   sectionTitle(doc, "Agreement terms");
   bodyText(doc, agreement.termsText);
 
-  ensureRoom(doc, 220);
-  partyBlock(doc, "Creator", creator);
-  ensureRoom(doc, 220);
-  partyBlock(doc, "Counterparty", counterparty);
+  const partyGap = 16;
+  const partyWidth = (contentWidth(doc) - partyGap) / 2;
+  const partyDetailsCardHeight = Math.max(
+    partyDetailsHeight(doc, creator, partyWidth),
+    partyDetailsHeight(doc, counterparty, partyWidth)
+  );
+  ensureRoom(doc, partyDetailsCardHeight + 20);
+  const partyY = doc.y + 6;
+  partyDetailsCard(doc, "Creator", creator, doc.page.margins.left, partyY, partyWidth, partyDetailsCardHeight);
+  partyDetailsCard(
+    doc,
+    "Counterparty",
+    counterparty,
+    doc.page.margins.left + partyWidth + partyGap,
+    partyY,
+    partyWidth,
+    partyDetailsCardHeight
+  );
+  doc.y = partyY + partyDetailsCardHeight + 12;
+
+  const signatureCardHeight = 124;
+  ensureRoom(doc, signatureCardHeight + 20);
+  const signatureY = doc.y + 6;
+  partySignatureCard(doc, creator, doc.page.margins.left, signatureY, partyWidth, signatureCardHeight);
+  partySignatureCard(
+    doc,
+    counterparty,
+    doc.page.margins.left + partyWidth + partyGap,
+    signatureY,
+    partyWidth,
+    signatureCardHeight
+  );
+  doc.y = signatureY + signatureCardHeight + 18;
 
   sectionTitle(doc, "Audit trail");
   if (agreement.auditLogs.length > 0) {
@@ -315,7 +428,7 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
       id,
       OR: [
         { createdById: session.id },
-        { parties: { some: { email: session.email } } },
+        { parties: { some: { userId: session.id } } },
       ],
     },
     include: {
@@ -331,7 +444,8 @@ export async function GET(_request: Request, context: { params: Promise<{ id: st
   }
 
   const pdf = await createPdf(agreement);
-  const filename = `${safeFilename(agreement.referenceNumber || agreement.title)}-summary.pdf`;
+  const filenameBase = safeFilename(agreement.title) || safeFilename(agreement.referenceNumber) || "kasulatan-agreement";
+  const filename = `${filenameBase}.pdf`;
 
   return new Response(new Uint8Array(pdf), {
     headers: {
