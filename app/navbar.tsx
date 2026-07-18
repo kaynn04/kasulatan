@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import Logout from "@/components/Logout";
+import MainNavigation from "@/components/MainNavigation";
 import ThemeToggle from "@/components/ThemeToggle";
 
 const authenticatedLinks = [
@@ -13,25 +14,6 @@ const publicLinks = [
   { href: "/#use-cases", label: "Use cases" },
   { href: "/#what-is-recorded", label: "What is recorded" },
 ];
-
-function NavLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="site-nav-link"
-      style={{
-        textDecoration: "none",
-        fontSize: "14px",
-        fontWeight: 700,
-        padding: "8px 12px",
-        borderRadius: "8px",
-        transition: "background 0.2s, color 0.2s",
-      }}
-    >
-      {label}
-    </Link>
-  );
-}
 
 export default async function Navbar() {
   const session = await getSession();
@@ -60,13 +42,7 @@ export default async function Navbar() {
           </span>
         </Link>
 
-        {navLinks.length > 0 && (
-          <nav className="site-main-nav" aria-label="Main navigation">
-            {navLinks.map(({ href, label }) => (
-              <NavLink key={href} href={href} label={label} />
-            ))}
-          </nav>
-        )}
+        {navLinks.length > 0 && <MainNavigation links={navLinks} />}
 
         <div className="site-header-actions">
           <ThemeToggle />
@@ -85,7 +61,7 @@ export default async function Navbar() {
                   </span>
                 </span>
               </div>
-              <Logout variant="dark" />
+              <Logout />
             </>
           ) : (
             <>

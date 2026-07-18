@@ -406,23 +406,9 @@
 .asidePrimary {
   overflow: hidden;
   border-radius: 22px;
-  background: var(--auth-blue-deep);
+  background: linear-gradient(135deg, var(--auth-blue-deep), color-mix(in srgb, var(--auth-blue-deep) 76%, var(--auth-blue)));
   padding: 29px;
   color: #fffdf8;
-}
-
-.asidePrimary::after {
-  content: "✦";
-  display: grid;
-  width: 118px;
-  height: 118px;
-  margin: 28px -45px -78px auto;
-  place-items: center;
-  border: 1px solid rgba(239, 182, 66, 0.45);
-  border-radius: 50%;
-  background: rgba(239, 182, 66, 0.12);
-  color: var(--auth-gold);
-  font-size: 34px;
 }
 
 .asideKicker {
@@ -553,9 +539,6 @@
     position: static;
   }
 
-  .asidePrimary::after {
-    display: none;
-  }
 }
 
 @media (max-width: 600px) {
