@@ -7,7 +7,7 @@ export default function PageIntro({ title, description }: PageIntroProps) {
   return (
     <section style={{ marginBottom: "48px" }}>
       <h1 style={{
-        fontFamily: "'DM Serif Display', serif",
+        fontFamily: "var(--font-dm-serif), serif",
         fontSize: "56px",
         lineHeight: 1.15,
         color: "white",

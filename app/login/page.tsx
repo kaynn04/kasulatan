@@ -1,98 +1,96 @@
-import LoginForm from "./LoginForm";
+import type { Metadata } from "next";
 import Link from "next/link";
+import LoginForm from "./LoginForm";
+import styles from "../auth.module.css";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  description: "Sign in to review, create, and manage your Kasulatan agreements.",
+};
+
+const returnToItems = [
+  {
+    title: "Your active agreements",
+    description: "See which records need your review or signature.",
+  },
+  {
+    title: "One shared version",
+    description: "Return to the same terms and party details both sides reviewed.",
+  },
+  {
+    title: "Printable records",
+    description: "Open finalized summaries and keep a copy for reference.",
+  },
+];
 
 export default function LoginPage() {
   return (
-    <main className="brand-gradient-page" style={{
-      minHeight: "calc(100vh - 64px)",
-      padding: 0,
-      margin: 0,
-      background: "linear-gradient(135deg, #005461 0%, #0C7779 40%, #249E94 75%, #3BC1A8 100%)",
-      position: "relative",
-      overflow: "hidden",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    }}>
-
-      {/* Decorative circles */}
-      <span style={{
-        position: "absolute", top: "-100px", left: "-100px",
-        width: "400px", height: "400px", borderRadius: "50%",
-        background: "rgba(59,193,168,0.12)", pointerEvents: "none",
-      }} />
-      <span style={{
-        position: "absolute", bottom: "-60px", right: "-60px",
-        width: "350px", height: "350px", borderRadius: "50%",
-        background: "rgba(0,84,97,0.3)", pointerEvents: "none",
-      }} />
-      <span style={{
-        position: "absolute", top: "20%", right: "10%",
-        width: "200px", height: "200px", borderRadius: "50%",
-        background: "rgba(36,158,148,0.15)", pointerEvents: "none",
-      }} />
-
-      {/* Floating card */}
-      <div style={{
-        position: "relative",
-        zIndex: 1,
-        background: "white",
-        borderRadius: "24px",
-        padding: "48px 44px",
-        width: "100%",
-        maxWidth: "700px",
-        margin: "40px 24px",
-        marginTop: "-70px",
-        boxShadow: "0 32px 80px rgba(0,84,97,0.4), 0 8px 24px rgba(0,84,97,0.2)",
-      }}>
-
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
-          <span style={{
-            width: "32px", height: "32px", borderRadius: "8px",
-            background: "#0C7779",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            marginBottom: "-10px",
-
-          }}>
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
-          </span>
-          <span style={{
-            fontFamily: "'DM Serif Display', serif",
-            fontSize: "45px", color: "#005461", 
-            letterSpacing: "0.03em",
-            marginBottom: "-10px",
-          }}>
-            Kasulatan
-          </span>
+    <main className={`${styles.page} auth-page`}>
+      <div className={styles.pageTexture} aria-hidden="true" />
+      <div className={styles.container}>
+        <div className={styles.pageIntro}>
+          <div>
+            <span className={styles.kicker}>Welcome back</span>
+            <h1>Continue where the agreement left off.</h1>
+          </div>
+          <p>
+            Sign in to review terms, complete a signature, or return to the records you have already created.
+          </p>
         </div>
 
-        {/* Heading */}
-        <h1 style={{
-          fontFamily: "'DM Serif Display', serif",
-          fontSize: "28px", color: "#005461",
-          margin: "0 2px 10px 2px",
-        }}>
-          Welcome back
-        </h1>
-        <p style={{ fontSize: "18px", color: "#99a1af", margin: "0 0 32px", fontWeight: 300 }}>
-          Sign in to your Kasulatan account
-        </p>
+        <div className={`${styles.layout} ${styles.loginLayout}`}>
+          <section className={styles.formCard} aria-labelledby="login-form-title">
+            <div className={styles.formCardHeader}>
+              <span className={styles.documentMark} aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M7 3h7l4 4v14H7z" />
+                  <path d="M14 3v5h5M10 13h6M10 17h6" />
+                </svg>
+              </span>
+              <div>
+                <h2 id="login-form-title">Sign in to Kasulatan</h2>
+                <p>Use the email and password connected to your agreements.</p>
+              </div>
+            </div>
 
-        <LoginForm />
+            <LoginForm />
 
-        <p style={{ marginTop: "24px", textAlign: "center", fontSize: "12.5px", color: "#99a1af" }}>
-          Don&apos;t have an account?{" "}
-          <Link href="./register" style={{ color: "#0C7779", fontWeight: 500, textDecoration: "none" }}>
-            Register
-          </Link>
-        </p>
+            <p className={styles.accountSwitch}>
+              New to Kasulatan? <Link href="/register">Create an account</Link>
+            </p>
+          </section>
 
+          <aside className={styles.aside} aria-label="What you can access after signing in">
+            <div className={styles.asidePrimary}>
+              <span className={styles.asideKicker}>When you return</span>
+              <h2>Your agreements stay organized around the next action.</h2>
+              <div className={styles.infoList}>
+                {returnToItems.map((item, index) => (
+                  <div key={item.title} className={styles.infoItem}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h3>{item.title}</h3>
+                      <p>{item.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className={styles.securityNote}>
+              <span className={styles.securityIcon} aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="5" y="10" width="14" height="10" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+              </span>
+              <div>
+                <strong>Your password is never stored as plain text.</strong>
+                <p>Sign-in attempts are rate-limited, and the session cookie is protected from browser scripts.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
       </div>
     </main>
   );

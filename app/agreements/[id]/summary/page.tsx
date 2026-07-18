@@ -105,7 +105,7 @@ function PartySection({ party, title }: { party: AgreementParty | undefined; tit
             Signature
           </p>
           {party.typedSignature && (
-            <p style={{ margin: "0 0 10px", color: "#0f172a", fontFamily: "'DM Serif Display', serif", fontSize: "25px" }}>
+            <p style={{ margin: "0 0 10px", color: "#0f172a", fontFamily: "var(--font-dm-serif), serif", fontSize: "25px" }}>
               {party.typedSignature}
             </p>
           )}
@@ -233,7 +233,7 @@ export default async function AgreementSummaryPage({
               <h1 style={{
                 margin: "0 0 10px",
                 color: "white",
-                fontFamily: "'DM Serif Display', serif",
+                fontFamily: "var(--font-dm-serif), serif",
                 fontSize: "40px",
                 lineHeight: 1.08,
               }}>

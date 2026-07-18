@@ -266,7 +266,7 @@ const cardStyle = {
 const titleStyle = {
   margin: "0 0 12px",
   color: "#0f172a",
-  fontFamily: "'DM Serif Display', serif",
+  fontFamily: "var(--font-dm-serif), serif",
   fontSize: "42px",
   lineHeight: 1.08,
 };

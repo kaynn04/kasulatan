@@ -162,7 +162,7 @@ function PartyCard({ party, title }: { party: AgreementParty | undefined; title:
           <p style={{ margin: "0 0 6px", color: "#64748b", fontSize: "12px", fontWeight: 900 }}>
             Typed signature
           </p>
-          <p style={{ margin: 0, color: "#0f172a", fontFamily: "'DM Serif Display', serif", fontSize: "24px" }}>
+          <p style={{ margin: 0, color: "#0f172a", fontFamily: "var(--font-dm-serif), serif", fontSize: "24px" }}>
             {party.typedSignature}
           </p>
         </div>
@@ -281,7 +281,7 @@ export default async function AgreementDetailsPage({
               <h1 style={{
                 margin: "0 0 12px",
                 color: "#0f172a",
-                fontFamily: "'DM Serif Display', serif",
+                fontFamily: "var(--font-dm-serif), serif",
                 fontSize: "42px",
                 lineHeight: 1.08,
               }}>

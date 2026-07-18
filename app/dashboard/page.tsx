@@ -149,7 +149,7 @@ export default async function DashboardPage() {
             <h1 style={{
               margin: "0 0 10px",
               color: "#0f172a",
-              fontFamily: "'DM Serif Display', serif",
+              fontFamily: "var(--font-dm-serif), serif",
               fontSize: "42px",
               lineHeight: 1.1,
             }}>

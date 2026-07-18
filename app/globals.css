@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "DM Sans", sans-serif;
-  --font-serif: "DM Serif Display", serif;
+  --font-sans: var(--font-dm-sans), sans-serif;
+  --font-serif: var(--font-dm-serif), serif;
 
   --color-brand-blue:  #3DB2FF;
   --color-brand-cream: #FFEDDA;
@@ -20,7 +19,7 @@ html,
 body {
   margin: 0;
   padding: 0;
-  font-family: "DM Sans", Arial, sans-serif;
+  font-family: var(--font-dm-sans), Arial, sans-serif;
   background-color: #f7f7f7;
   color: #111827;
   -webkit-font-smoothing: antialiased;
@@ -37,9 +36,9 @@ body {
   --theme-heading: #111827;
   --theme-muted: #64748b;
   --theme-faint: #94a3b8;
-  --theme-brand: #005461;
-  --theme-brand-soft: #E6FFFA;
-  --theme-brand-border: #B7F7EC;
+  --theme-brand: #194d71;
+  --theme-brand-soft: #edf4f8;
+  --theme-brand-border: #c8dbe7;
   --theme-shadow: 0 14px 40px rgba(15,23,42,0.05);
 }
 
@@ -54,9 +53,9 @@ body {
   --theme-heading: #f3f8fa;
   --theme-muted: #9fb3ba;
   --theme-faint: #789099;
-  --theme-brand: #74dfcf;
-  --theme-brand-soft: #113b3e;
-  --theme-brand-border: #23676b;
+  --theme-brand: #8fc3e6;
+  --theme-brand-soft: #153044;
+  --theme-brand-border: #315a74;
   --theme-shadow: 0 18px 46px rgba(0,0,0,0.28);
 }
 
@@ -72,10 +71,6 @@ p {
 }
 
 /* ── Nav ── */
-header {
-  background-color: #005461;
-}
-
 nav {
   display: flex;
   gap: 16px;
@@ -95,6 +90,17 @@ nav a:hover {
 .site-header {
   min-height: 72px;
   padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid var(--theme-border);
+  background: color-mix(in srgb, var(--theme-surface) 94%, transparent);
+  box-shadow: 0 4px 24px rgba(22, 40, 58, 0.06);
+  backdrop-filter: blur(16px);
+}
+
+.site-header-public {
+  background: rgba(251, 248, 240, 0.94);
 }
 
 .site-header-inner {
@@ -119,7 +125,7 @@ nav a:hover {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: #3BC1A8;
+  background: #194d71;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -127,6 +133,8 @@ nav a:hover {
 }
 
 .site-brand-text {
+  color: #163c57;
+  font-family: var(--font-dm-serif), Georgia, serif;
   font-size: 28px;
   line-height: 1;
   letter-spacing: 0;
@@ -140,18 +148,22 @@ nav a:hover {
   max-width: 100%;
   padding: 4px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.03);
+  background: transparent;
+}
+
+.site-nav-link {
+  color: #55616b;
 }
 
 .site-nav-link:hover {
-  background: rgba(59,193,168,0.15) !important;
-  color: #005461 !important;
+  background: rgba(239, 182, 66, 0.16) !important;
+  color: #194d71 !important;
   text-decoration: none;
 }
 
 .site-auth-link:hover {
-  border-color: #3BC1A8 !important;
-  color: white !important;
+  border-color: #194d71 !important;
+  color: #194d71 !important;
   text-decoration: none;
 }
 
@@ -162,8 +174,8 @@ nav a:hover {
   min-height: 38px;
   padding: 0 15px;
   border-radius: 10px;
-  border: 1px solid rgba(59,193,168,0.42);
-  color: rgba(255,255,255,0.88);
+  border: 1px solid #d6d8d6;
+  color: #33495b;
   text-decoration: none;
   font-size: 14px;
   font-weight: 800;
@@ -171,7 +183,7 @@ nav a:hover {
 }
 
 .site-register-link:hover {
-  background: #249E94 !important;
+  background: #dca334 !important;
   text-decoration: none;
 }
 
@@ -182,8 +194,8 @@ nav a:hover {
   min-height: 38px;
   padding: 0 16px;
   border-radius: 10px;
-  background: #3BC1A8;
-  color: #005461;
+  background: #efb642;
+  color: #16283a;
   text-decoration: none;
   font-size: 14px;
   font-weight: 900;
@@ -200,75 +212,58 @@ nav a:hover {
 }
 
 .theme-toggle {
-  width: 48px;
-  height: 30px;
-  border: 1px solid rgba(59,193,168,0.42);
+  min-width: 88px;
+  height: 36px;
+  border: 1px solid var(--theme-border);
   border-radius: 999px;
-  background: rgba(255,255,255,0.78);
-  padding: 2px;
+  background: var(--theme-surface-soft);
+  color: var(--theme-muted);
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
-.theme-toggle-track {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  align-items: center;
-  color: #005461;
-}
-
-.theme-toggle-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
-
-.theme-toggle-thumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: #3BC1A8;
-  box-shadow: 0 3px 9px rgba(0,84,97,0.22);
-  transition: transform 0.2s, background 0.2s;
+.theme-toggle:hover {
+  border-color: var(--theme-brand-border);
+  color: var(--theme-brand);
 }
 
 [data-theme="dark"] .theme-toggle {
-  background: rgba(13,31,35,0.88);
-  border-color: #23676b;
-}
-
-[data-theme="dark"] .theme-toggle-track {
-  color: #b7f7ec;
-}
-
-[data-theme="dark"] .theme-toggle-thumb {
-  transform: translateX(18px);
-  background: #74dfcf;
+  background: var(--theme-surface-soft);
+  border-color: var(--theme-border);
+  color: var(--theme-muted);
 }
 
 [data-theme="dark"] .site-header {
-  background: rgba(7,19,22,0.94) !important;
+  background: rgba(10, 24, 33, 0.94) !important;
   border-bottom-color: var(--theme-border) !important;
   box-shadow: 0 1px 18px rgba(0,0,0,0.3) !important;
 }
 
 [data-theme="dark"] .site-main-nav {
-  background: rgba(116,223,207,0.08) !important;
+  background: transparent !important;
 }
 
 [data-theme="dark"] .site-brand-text,
 [data-theme="dark"] .site-nav-link {
   color: var(--theme-heading) !important;
+}
+
+[data-theme="dark"] .site-auth-link {
+  border-color: var(--theme-border-strong);
+  color: var(--theme-heading);
+}
+
+:is(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid rgba(239, 182, 66, 0.62);
+  outline-offset: 3px;
 }
 
 [data-theme="dark"] .site-user-name {
@@ -290,25 +285,25 @@ nav a:hover {
   color: var(--theme-heading) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) {
   background: var(--theme-page) !important;
   color: var(--theme-text) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: white" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:white" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: white" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:white" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #ffffff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:#ffffff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #ffffff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:#ffffff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(255, 255, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(255, 255, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(255,255,255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(255, 255, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(255, 255, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(255,255,255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: white" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:white" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: white" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:white" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #ffffff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:#ffffff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #ffffff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:#ffffff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(255, 255, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(255, 255, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(255,255,255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(255, 255, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(255, 255, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(255,255,255)" i],
 [data-theme="dark"] .brand-gradient-page [style*="background: white" i],
 [data-theme="dark"] .brand-gradient-page [style*="background:white" i],
 [data-theme="dark"] .brand-gradient-page [style*="background-color: white" i],
@@ -326,141 +321,141 @@ nav a:hover {
   background: var(--theme-surface) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #f8fafc" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #f8fafc" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(248, 250, 252)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(248, 250, 252)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #f9fafb" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #f9fafb" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(249, 250, 251)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(249, 250, 251)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #fbfdff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #fbfdff" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(251, 253, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(251, 253, 255)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #f1f5f9" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:#f1f5f9" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #f1f5f9" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:#f1f5f9" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(241, 245, 249)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(241, 245, 249)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(241,245,249)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(241, 245, 249)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(241, 245, 249)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(241,245,249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #f8fafc" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #f8fafc" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(248, 250, 252)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(248, 250, 252)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #f9fafb" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #f9fafb" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(249, 250, 251)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(249, 250, 251)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #fbfdff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #fbfdff" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(251, 253, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(251, 253, 255)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #f1f5f9" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:#f1f5f9" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #f1f5f9" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:#f1f5f9" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(241, 245, 249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(241, 245, 249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(241,245,249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(241, 245, 249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(241, 245, 249)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(241,245,249)" i],
 [data-theme="dark"] .brand-gradient-page [style*="background: #f9fafb" i],
 [data-theme="dark"] .brand-gradient-page [style*="background-color: #f9fafb" i] {
   background: var(--theme-surface-soft) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #f1f5f9" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:#f1f5f9" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #f1f5f9" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:#f1f5f9" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(241, 245, 249)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(241, 245, 249)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(241,245,249)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(241, 245, 249)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(241,245,249)" i] :is(p, span, strong, div) {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #f1f5f9" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:#f1f5f9" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #f1f5f9" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:#f1f5f9" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(241, 245, 249)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(241, 245, 249)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(241,245,249)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(241, 245, 249)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(241,245,249)" i] :is(p, span, strong, div) {
   color: var(--theme-muted) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px solid #e5e7eb"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1.5px solid #e5e7eb"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px solid #dbe3ea"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px solid #dbe3ef"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px solid #eef2f7"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px solid #e5e7eb"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1.5px solid #e5e7eb"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px solid #dbe3ea"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px solid #dbe3ef"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px solid #eef2f7"],
 [data-theme="dark"] .brand-gradient-page [style*="border: 1.5px solid #e5e7eb"] {
   border-color: var(--theme-border) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px dashed #cbd5e1"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="border: 1px dashed #94a3b8"] {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px dashed #cbd5e1"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="border: 1px dashed #94a3b8"] {
   border-color: var(--theme-border-strong) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="box-shadow"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="box-shadow"],
 [data-theme="dark"] .brand-gradient-page [style*="box-shadow"] {
   box-shadow: var(--theme-shadow) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) :is(h1, h2, h3, h4, label, strong),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) :is(h1, h2, h3, h4, label, strong),
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] :is(h1, h2, h3, h4, label, strong) {
   color: var(--theme-heading) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) :is(p, li, span, div, a),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) :is(p, li, span, div, a),
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] :is(p, span, a) {
   color: var(--theme-text) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #64748b"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #6b7280"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #475569"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #334155"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #94a3b8"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #64748b"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #6b7280"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #475569"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #334155"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #94a3b8"],
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] [style*="color: #99a1af"],
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] [style*="color: #6b7280"],
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] [style*="color: #64748b"] {
   color: var(--theme-muted) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #005461"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #0C7779"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #005461"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #0C7779"],
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] [style*="color: #005461"],
 [data-theme="dark"] .brand-gradient-page [style*="background: white"] [style*="color: #0C7779"] {
   color: var(--theme-brand) !important;
 }
 
 [data-theme="dark"] .brand-tint-surface,
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #E6FFFA" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:#E6FFFA" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #E6FFFA" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:#E6FFFA" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(230, 255, 250)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(230, 255, 250)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(230,255,250)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(230, 255, 250)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(230,255,250)" i] {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #E6FFFA" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:#E6FFFA" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #E6FFFA" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:#E6FFFA" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(230, 255, 250)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(230, 255, 250)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(230,255,250)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(230, 255, 250)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(230,255,250)" i] {
   background: var(--theme-brand-soft) !important;
   border-color: var(--theme-brand-border) !important;
   color: var(--theme-brand) !important;
 }
 
 [data-theme="dark"] .brand-tint-surface :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #E6FFFA" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:#E6FFFA" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #E6FFFA" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:#E6FFFA" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(230, 255, 250)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(230, 255, 250)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background:rgb(230,255,250)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(230, 255, 250)" i] :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color:rgb(230,255,250)" i] :is(p, span, strong, div) {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #E6FFFA" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:#E6FFFA" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #E6FFFA" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:#E6FFFA" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(230, 255, 250)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(230, 255, 250)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background:rgb(230,255,250)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(230, 255, 250)" i] :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color:rgb(230,255,250)" i] :is(p, span, strong, div) {
   color: var(--theme-brand) !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #FEF3C7" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #FEF3C7" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(254, 243, 199)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(254, 243, 199)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #fff7ed" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #fff7ed" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(255, 247, 237)" i],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(255, 247, 237)" i] {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #FEF3C7" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #FEF3C7" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(254, 243, 199)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(254, 243, 199)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #fff7ed" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #fff7ed" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(255, 247, 237)" i],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(255, 247, 237)" i] {
   background: #33250f !important;
   border-color: #805a1f !important;
   color: #f8d58b !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #FEF3C7" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #FEF3C7" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(254, 243, 199)" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(254, 243, 199)" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: #fff7ed" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: #fff7ed" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background: rgb(255, 247, 237)" i]:not(.warning-surface) :is(p, span, strong, div),
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="background-color: rgb(255, 247, 237)" i]:not(.warning-surface) :is(p, span, strong, div) {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #FEF3C7" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #FEF3C7" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(254, 243, 199)" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(254, 243, 199)" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: #fff7ed" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: #fff7ed" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background: rgb(255, 247, 237)" i]:not(.warning-surface) :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="background-color: rgb(255, 247, 237)" i]:not(.warning-surface) :is(p, span, strong, div) {
   color: #f8d58b !important;
 }
 
@@ -488,9 +483,9 @@ nav a:hover {
   color: #f8d58b !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #7c2d12"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #9a3412"],
-[data-theme="dark"] main:not(.brand-gradient-page) [style*="color: #92400e"] {
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #7c2d12"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #9a3412"],
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) [style*="color: #92400e"] {
   color: #f8d58b !important;
 }
 
@@ -522,7 +517,7 @@ nav a:hover {
   color: #334155 !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) .signature-paper,
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) .signature-paper,
 [data-theme="dark"] .brand-gradient-page .signature-paper {
   background: #ffffff !important;
   border-color: #cbd5e1 !important;
@@ -533,7 +528,7 @@ nav a:hover {
   color: #475569 !important;
 }
 
-[data-theme="dark"] main:not(.brand-gradient-page) .signature-paper :is(p, span, strong, div),
+[data-theme="dark"] main:not(.brand-gradient-page):not(.landing-page):not(.auth-page) .signature-paper :is(p, span, strong, div),
 [data-theme="dark"] .brand-gradient-page .signature-paper :is(p, span, strong, div) {
   color: #475569 !important;
 }
@@ -901,12 +896,14 @@ main {
   }
 
   .theme-toggle {
-    width: 44px;
-    height: 28px;
+    min-width: 36px;
+    width: 36px;
+    height: 32px;
+    padding: 0;
   }
 
-  [data-theme="dark"] .theme-toggle-thumb {
-    transform: translateX(16px);
+  .theme-toggle-label {
+    display: none;
   }
 
   .site-header-actions {
@@ -939,5 +936,11 @@ main {
   .site-nav-link {
     flex: 1 0 auto;
     text-align: center;
+  }
+}
+
+@media (max-width: 420px) {
+  .site-header-public .site-auth-link {
+    display: none;
   }
 }

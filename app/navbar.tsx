@@ -8,13 +8,18 @@ const authenticatedLinks = [
   { href: "/agreements", label: "Agreements" },
 ];
 
+const publicLinks = [
+  { href: "/#how-it-works", label: "How it works" },
+  { href: "/#use-cases", label: "Use cases" },
+  { href: "/#what-is-recorded", label: "What is recorded" },
+];
+
 function NavLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
       className="site-nav-link"
       style={{
-        color: "#475569",
         textDecoration: "none",
         fontSize: "14px",
         fontWeight: 700,
@@ -30,7 +35,7 @@ function NavLink({ href, label }: { href: string; label: string }) {
 
 export default async function Navbar() {
   const session = await getSession();
-  const navLinks = session ? authenticatedLinks : [];
+  const navLinks = session ? authenticatedLinks : publicLinks;
   const initials = session?.name
     .split(" ")
     .map((part) => part[0])
@@ -39,17 +44,9 @@ export default async function Navbar() {
     .toUpperCase();
 
   return (
-    <header className="site-header" style={{
-      background: session ? "rgba(255,255,255,0.96)" : "rgba(0,84,97,0.96)",
-      borderBottom: session ? "1px solid #e5e7eb" : "1px solid rgba(59,193,168,0.15)",
-      position: "sticky",
-      top: 0,
-      zIndex: 100,
-      boxShadow: session ? "0 1px 18px rgba(15,23,42,0.06)" : "0 2px 16px rgba(0,84,97,0.3)",
-      backdropFilter: "blur(12px)",
-    }}>
+    <header className={`site-header ${session ? "site-header-authenticated" : "site-header-public"}`}>
       <div className="site-header-inner">
-        <Link href="/dashboard" className="site-brand-link" style={{ textDecoration: "none" }}>
+        <Link href={session ? "/dashboard" : "/"} className="site-brand-link" style={{ textDecoration: "none" }}>
           <span className="site-brand-mark">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
@@ -58,10 +55,7 @@ export default async function Navbar() {
               <line x1="16" y1="17" x2="8" y2="17" />
             </svg>
           </span>
-          <span className="site-brand-text" style={{
-            fontFamily: "'DM Serif Display', serif",
-            color: session ? "#005461" : "white",
-          }}>
+          <span className="site-brand-text">
             Kasulatan
           </span>
         </Link>

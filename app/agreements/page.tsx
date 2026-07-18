@@ -401,7 +401,7 @@ export default async function AgreementsPage({ searchParams }: { searchParams: S
             <p style={{ margin: "0 0 8px", color: "#0C7779", fontSize: "13px", fontWeight: 900, textTransform: "uppercase" }}>
               Agreements
             </p>
-            <h1 style={{ margin: "0 0 10px", color: "#0f172a", fontFamily: "'DM Serif Display', serif", fontSize: "42px", lineHeight: 1.1 }}>
+            <h1 style={{ margin: "0 0 10px", color: "#0f172a", fontFamily: "var(--font-dm-serif), serif", fontSize: "42px", lineHeight: 1.1 }}>
               Your transaction records
             </h1>
             <p style={{ margin: 0, color: "#64748b", fontSize: "16px", lineHeight: 1.65, maxWidth: "680px" }}>
