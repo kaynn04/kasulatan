@@ -45,6 +45,9 @@ model Agreement {
   createdBy       User             @relation("createdAgreements", fields: [createdById], references: [id])
   parties         AgreementParty[]
   auditLogs       AuditLog[]
+
+  @@index([createdById, updatedAt])
+  @@index([status, updatedAt])
 }
 
 model AgreementParty {
@@ -67,6 +70,10 @@ model AgreementParty {
   updatedAt                      DateTime           @updatedAt
   agreement                      Agreement          @relation(fields: [agreementId], references: [id])
   user                           User?              @relation(fields: [userId], references: [id])
+
+  @@unique([agreementId, role])
+  @@index([userId, updatedAt])
+  @@index([email])
 }
 
 enum AgreementType {
@@ -106,6 +113,9 @@ model AuditLog {
 
   agreement Agreement @relation(fields: [agreementId], references: [id])
   actor     User      @relation(fields: [actorUserId], references: [id])
+
+  @@index([agreementId, createdAt])
+  @@index([actorUserId, createdAt])
 }
 
 model Session {

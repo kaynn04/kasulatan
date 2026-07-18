@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { registerUser } from "./actions";
+import styles from "../auth.module.css";
 
 type RegisterState = {
   success: boolean;
@@ -61,7 +62,7 @@ function validateField(name: FieldName, values: FormValues) {
     return requiredMessages[name];
   }
 
-  if (name === "email" && !value.includes("@")) {
+  if (name === "email" && !/^\S+@\S+\.\S+$/.test(value)) {
     return "Enter a valid email address.";
   }
 
@@ -74,6 +75,14 @@ function validateField(name: FieldName, values: FormValues) {
   }
 
   return undefined;
+}
+
+function ErrorIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Zm0 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4.5a1 1 0 0 1-2 0v-3a1 1 0 0 1 2 0v3Z" />
+    </svg>
+  );
 }
 
 function Field({
@@ -90,74 +99,39 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
-      <label
-        htmlFor={htmlFor}
-        style={{
-          fontSize: "12px",
-          fontWeight: 800,
-          color: "#334155",
-        }}
-      >
-        {label}
-      </label>
+    <div className={styles.field}>
+      <label htmlFor={htmlFor}>{label}</label>
       {children}
-      {hint && !error && (
-        <p style={{ fontSize: "12px", color: "#64748b", margin: 0, lineHeight: 1.45 }}>
-          {hint}
-        </p>
-      )}
-      {error && (
-        <p style={{
-          display: "flex", alignItems: "center", gap: "5px",
-          fontSize: "12px", color: "#dc2626", margin: 0,
-        }}>
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor" aria-hidden="true">
-            <path d="M6 0a6 6 0 100 12A6 6 0 006 0zm0 9a.75.75 0 110-1.5A.75.75 0 016 9zm.75-3.75a.75.75 0 01-1.5 0v-2.5a.75.75 0 011.5 0v2.5z" />
-          </svg>
-          {error}
-        </p>
-      )}
+      {hint && !error && <p className={styles.fieldHint}>{hint}</p>}
+      {error && <p className={styles.fieldError}><ErrorIcon />{error}</p>}
     </div>
   );
 }
 
 function Section({
+  number,
   title,
   description,
   children,
 }: {
+  number: string;
   title: string;
   description: string;
   children: React.ReactNode;
 }) {
   return (
-    <section style={{ display: "grid", gap: "18px" }}>
-      <div>
-        <h2 style={{ margin: "0 0 4px", color: "#0f172a", fontSize: "18px", fontWeight: 900 }}>
-          {title}
-        </h2>
-        <p style={{ margin: 0, color: "#64748b", fontSize: "13px", lineHeight: 1.55 }}>
-          {description}
-        </p>
+    <section className={styles.formSection}>
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionNumber} aria-hidden="true">{number}</span>
+        <div>
+          <h2>{title}</h2>
+          <p>{description}</p>
+        </div>
       </div>
       {children}
     </section>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  borderRadius: "10px",
-  border: "1px solid #dbe3ea",
-  background: "white",
-  padding: "11px 12px",
-  fontSize: "14px",
-  color: "#0f172a",
-  outline: "none",
-  fontFamily: "inherit",
-  boxSizing: "border-box",
-};
 
 export default function RegisterForm() {
   const [state, action, pending] = useActionState(registerUser, initialState);
@@ -173,14 +147,12 @@ export default function RegisterForm() {
         setTouched((current) => ({ ...current, [name]: true }));
       },
       onBlur: () => setTouched((current) => ({ ...current, [name]: true })),
+      "aria-invalid": Boolean(errorFor(name)),
     };
   }
 
   function errorFor(name: FieldName) {
-    if (touched[name]) {
-      return validateField(name, values);
-    }
-
+    if (touched[name]) return validateField(name, values);
     return errors[name];
   }
 
@@ -197,113 +169,88 @@ export default function RegisterForm() {
   }
 
   return (
-    <form action={action} onSubmit={handleSubmit} noValidate style={{ display: "grid", gap: "28px" }}>
+    <form action={action} onSubmit={handleSubmit} noValidate className={styles.registerForm}>
       {errors.general && (
-        <div style={{
-          display: "flex", alignItems: "flex-start", gap: "10px",
-          borderRadius: "10px", border: "1px solid rgba(220,38,38,0.2)",
-          background: "rgba(220,38,38,0.05)", padding: "12px 14px",
-        }}>
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="#dc2626" style={{ marginTop: "1px", flexShrink: 0 }} aria-hidden="true">
-            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 12a1 1 0 110-2 1 1 0 010 2zm1-4.5a1 1 0 01-2 0v-3a1 1 0 012 0v3z" />
-          </svg>
-          <p style={{ fontSize: "13px", color: "#dc2626", margin: 0 }}>{errors.general}</p>
+        <div className={styles.errorBanner} role="alert">
+          <ErrorIcon />
+          <p>{errors.general}</p>
         </div>
       )}
 
       <Section
+        number="1"
         title="Personal identity"
         description="Use the name and contact number you want to appear in agreements you create or sign."
       >
         <Field label="Full legal name" htmlFor="name" error={errorFor("name")}>
-          <input {...inputProps("name")} style={inputStyle} type="text" name="name" id="name" placeholder="Maria Santos" autoComplete="name" />
+          <input {...inputProps("name")} className={styles.input} type="text" name="name" id="name" placeholder="Maria Santos" autoComplete="name" />
         </Field>
 
         <Field label="Mobile number" htmlFor="mobileNumber" error={errorFor("mobileNumber")} hint="This helps identify and contact the correct party.">
-          <input {...inputProps("mobileNumber")} style={inputStyle} type="tel" name="mobileNumber" id="mobileNumber" placeholder="09XX XXX XXXX" autoComplete="tel" />
+          <input {...inputProps("mobileNumber")} className={styles.input} type="tel" name="mobileNumber" id="mobileNumber" placeholder="09XX XXX XXXX" autoComplete="tel" />
         </Field>
       </Section>
 
       <Section
+        number="2"
         title="Registered address"
-        description="This location can be reused in agreement party details so creators do not need to type it again."
+        description="This location can be reused in agreement party details so you do not need to type it again."
       >
         <Field label="House no., street, building, or landmark" htmlFor="addressLine" error={errorFor("addressLine")}>
-          <input {...inputProps("addressLine")} style={inputStyle} type="text" name="addressLine" id="addressLine" placeholder="Unit 2, 123 Mabini Street" autoComplete="address-line1" />
+          <input {...inputProps("addressLine")} className={styles.input} type="text" name="addressLine" id="addressLine" placeholder="Unit 2, 123 Mabini Street" autoComplete="address-line1" />
         </Field>
 
-        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+        <div className={styles.twoColumn}>
           <Field label="Barangay" htmlFor="barangay" error={errorFor("barangay")}>
-            <input {...inputProps("barangay")} style={inputStyle} type="text" name="barangay" id="barangay" placeholder="Barangay San Antonio" autoComplete="address-line2" />
+            <input {...inputProps("barangay")} className={styles.input} type="text" name="barangay" id="barangay" placeholder="Barangay San Antonio" autoComplete="address-line2" />
           </Field>
 
           <Field label="City / Municipality" htmlFor="cityMunicipality" error={errorFor("cityMunicipality")}>
-            <input {...inputProps("cityMunicipality")} style={inputStyle} type="text" name="cityMunicipality" id="cityMunicipality" placeholder="Quezon City" autoComplete="address-level2" />
+            <input {...inputProps("cityMunicipality")} className={styles.input} type="text" name="cityMunicipality" id="cityMunicipality" placeholder="Quezon City" autoComplete="address-level2" />
           </Field>
         </div>
 
-        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+        <div className={styles.twoColumn}>
           <Field label="Province" htmlFor="province" error={errorFor("province")}>
-            <input {...inputProps("province")} style={inputStyle} type="text" name="province" id="province" placeholder="Metro Manila" autoComplete="address-level1" />
+            <input {...inputProps("province")} className={styles.input} type="text" name="province" id="province" placeholder="Metro Manila" autoComplete="address-level1" />
           </Field>
 
           <Field label="Postal code" htmlFor="postalCode" error={errorFor("postalCode")}>
-            <input {...inputProps("postalCode")} style={inputStyle} type="text" name="postalCode" id="postalCode" placeholder="1100" autoComplete="postal-code" />
+            <input {...inputProps("postalCode")} className={styles.input} type="text" name="postalCode" id="postalCode" placeholder="1100" autoComplete="postal-code" inputMode="numeric" />
           </Field>
         </div>
       </Section>
 
       <Section
+        number="3"
         title="Account security"
-        description="Keep email and password together because these are the credentials used to access your account."
+        description="Your email and password are the credentials used to access your agreement records."
       >
         <Field label="Email address" htmlFor="email" error={errorFor("email")}>
-          <input {...inputProps("email")} style={inputStyle} type="email" name="email" id="email" placeholder="maria@example.com" autoComplete="email" />
+          <input {...inputProps("email")} className={styles.input} type="email" name="email" id="email" placeholder="maria@example.com" autoComplete="email" />
         </Field>
 
-        <div className="register-two-col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
-          <Field label="Password" htmlFor="password" error={errorFor("password")}>
-            <input {...inputProps("password")} style={inputStyle} type="password" name="password" id="password" placeholder="At least 12 characters" autoComplete="new-password" />
+        <div className={styles.twoColumn}>
+          <Field label="Password" htmlFor="password" error={errorFor("password")} hint="Use at least 12 characters.">
+            <input {...inputProps("password")} className={styles.input} type="password" name="password" id="password" placeholder="At least 12 characters" autoComplete="new-password" />
           </Field>
 
           <Field label="Confirm password" htmlFor="confirmPassword" error={errorFor("confirmPassword")}>
-            <input {...inputProps("confirmPassword")} style={inputStyle} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" autoComplete="new-password" />
+            <input {...inputProps("confirmPassword")} className={styles.input} type="password" name="confirmPassword" id="confirmPassword" placeholder="Re-enter password" autoComplete="new-password" />
           </Field>
         </div>
       </Section>
 
-      <div style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: "16px",
-        borderTop: "1px solid #e5e7eb",
-        paddingTop: "22px",
-      }}>
-        <p style={{ margin: 0, color: "#64748b", fontSize: "13px", lineHeight: 1.5 }}>
-          Your profile details will be copied into agreement records when needed.
-        </p>
-        <button
-          type="submit"
-          disabled={pending}
-          style={{
-            minWidth: "180px",
-            padding: "12px 18px",
-            borderRadius: "10px",
-            border: "none",
-            background: pending ? "#249E94" : "#005461",
-            color: "white",
-            fontSize: "14px",
-            fontWeight: 900,
-            fontFamily: "inherit",
-            cursor: pending ? "not-allowed" : "pointer",
-            opacity: pending ? 0.72 : 1,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {pending ? "Creating..." : "Create account"}
+      <div className={styles.formSubmitRow}>
+        <p>Your profile details will be copied into agreement records when needed.</p>
+        <button type="submit" disabled={pending} className={styles.submitButton}>
+          {pending && <span className={styles.spinner} aria-hidden="true" />}
+          {pending ? "Creating account…" : "Create account"}
+          {!pending && (
+            <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M4 10h12M11 5l5 5-5 5" />
+            </svg>
+          )}
         </button>
       </div>
     </form>

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { createSession } from "@/lib/session";
 import { consumeRateLimit, getClientIp } from "@/lib/auth-rate-limit";
+import { formString, isValidEmail, normalizeEmail } from "@/lib/form-validation";
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 
@@ -24,17 +25,22 @@ export async function loginUser(
     formData: FormData
 ): Promise<LoginState> {
     // --- STEP 1: Extract form values ---
-    const email = (formData.get("email") as string)?.trim().toLowerCase();
-    const password = formData.get("password") as string;
+    const email = normalizeEmail(formString(formData, "email"));
+    const passwordValue = formData.get("password");
+    const password = typeof passwordValue === "string" ? passwordValue : "";
 
     // -- STEP 2: Validate form input ---
     const errors: LoginState["errors"] = {};
 
     if (!email) {
         errors.email = "Email is required.";
+    } else if (!isValidEmail(email)) {
+        errors.email = "Enter a valid email address.";
     }
     if (!password) {
         errors.password = "Password is required.";
+    } else if (Buffer.byteLength(password, "utf8") > 72) {
+        errors.password = "Password is too long.";
     }
     if (Object.keys(errors).length > 0) {
         return { success: false, errors };
@@ -80,4 +86,3 @@ export async function loginUser(
     await createSession(user.id);
     redirect("/dashboard");
 }   
-

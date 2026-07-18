@@ -3,6 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { randomBytes } from "node:crypto";
+import { headers } from "next/headers";
+import { getClientIp } from "@/lib/auth-rate-limit";
+import {
+    formString,
+    isValidDateOnly,
+    isValidEmail,
+    isValidMoneyAmount,
+    normalizeEmail,
+} from "@/lib/form-validation";
 
 type CreateAgreementState = {
     success: boolean;
@@ -40,14 +50,14 @@ export async function createAgreement(
     prevState: CreateAgreementState,
     formData: FormData
 ): Promise<CreateAgreementState> {
-    const title = (formData.get("title") as string)?.trim();
-    const agreementType = formData.get("agreementType") as string;
-    const subjectMatter = (formData.get("subjectMatter") as string)?.trim();
-    const amountRaw = formData.get("amount") as string;
-    const dueDateRaw = (formData.get("dueDate") as string)?.trim();
-    const paymentTerms = (formData.get("paymentTerms") as string)?.trim();
-    const termsText = (formData.get("termsText") as string)?.trim();
-    const counterPartyEmail = (formData.get("counterPartyEmail") as string)?.trim();
+    const title = formString(formData, "title");
+    const agreementType = formString(formData, "agreementType");
+    const subjectMatter = formString(formData, "subjectMatter");
+    const amountRaw = formString(formData, "amount");
+    const dueDateRaw = formString(formData, "dueDate");
+    const paymentTerms = formString(formData, "paymentTerms");
+    const termsText = formString(formData, "termsText");
+    const counterPartyEmail = normalizeEmail(formString(formData, "counterPartyEmail"));
 
     const session = await getSession();
 
@@ -63,24 +73,29 @@ export async function createAgreement(
     const errors: CreateAgreementState["errors"] = {};
 
     if (!title) errors.title = "Title is required";
+    else if (title.length > 160) errors.title = "Title must be 160 characters or fewer";
     if (!subjectMatter) errors.subjectMatter = "Subject matter is required";
+    else if (subjectMatter.length > 5_000) errors.subjectMatter = "Subject matter must be 5,000 characters or fewer";
     if (!paymentTerms) errors.paymentTerms = "Payment terms are required";
+    else if (paymentTerms.length > 5_000) errors.paymentTerms = "Payment terms must be 5,000 characters or fewer";
     if (!termsText) errors.termsText = "Terms are required";
+    else if (termsText.length > 30_000) errors.termsText = "Terms must be 30,000 characters or fewer";
 
-    const amount = parseFloat(amountRaw);
-    if (!amountRaw || isNaN(amount) || amount <= 0) {
-        errors.amount = "Amount must be a positive number";
+    if (!isValidMoneyAmount(amountRaw)) {
+        errors.amount = "Enter a positive amount up to 999,999,999.99 with at most 2 decimal places";
     }
 
-    const dueDate = dueDateRaw ? new Date(`${dueDateRaw}T00:00:00`) : null;
-    if (dueDateRaw && Number.isNaN(dueDate?.getTime())) {
+    const dueDate = dueDateRaw ? new Date(`${dueDateRaw}T00:00:00.000Z`) : null;
+    if (dueDateRaw && !isValidDateOnly(dueDateRaw)) {
         errors.dueDate = "Enter a valid due date";
     }
 
     if (!counterPartyEmail) {
         errors.counterPartyEmail = "Counterparty email is required";
-    } else if (!counterPartyEmail.includes("@")) {
+    } else if (!isValidEmail(counterPartyEmail)) {
         errors.counterPartyEmail = "Invalid email address";
+    } else if (counterPartyEmail === session.email.toLowerCase()) {
+        errors.counterPartyEmail = "You cannot create an agreement with yourself";
     }
 
     if (!["LOAN", "SALE", "SWAP", "SERVICE"].includes(agreementType)) {
@@ -107,15 +122,19 @@ export async function createAgreement(
         };
     }
 
+    const headerStore = await headers();
+    const ipAddress = await getClientIp();
+    const userAgent = headerStore.get("user-agent")?.slice(0, 500) ?? null;
+
     await prisma.$transaction(async (tx) => {
         const agreement = await tx.agreement.create({
             data: {
-                referenceNumber: `KAS-${Date.now()}`,
+                referenceNumber: `KAS-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}-${randomBytes(4).toString("hex").toUpperCase()}`,
                 createdById: session.id,
                 agreementType: agreementType as "LOAN" | "SALE" | "SWAP" | "SERVICE",
                 title,
                 subjectMatter,
-                amount,
+                amount: amountRaw,
                 currency: "PHP",
                 paymentTerms,
                 dueDate,
@@ -153,6 +172,8 @@ export async function createAgreement(
                 actorUserId: session.id,
                 actorEmail: session.email,
                 action: "agreement_created",
+                ipAddress,
+                userAgent,
             },
         });
     });

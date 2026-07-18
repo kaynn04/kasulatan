@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { ChangeEvent, PointerEvent, useRef, useState, useActionState } from "react";
+import { ChangeEvent, PointerEvent, useActionState, useRef, useState } from "react";
 import { signAgreement } from "./actions";
+import styles from "../../workflow.module.css";
 
 type SignAgreementState = {
   success: boolean;
@@ -15,18 +16,9 @@ type SignAgreementState = {
   };
 };
 
-const initialState: SignAgreementState = {
-  success: false,
-  errors: {},
-};
+const initialState: SignAgreementState = { success: false, errors: {} };
 
-export default function SignForm({
-  agreementId,
-  counterPartyName,
-}: {
-  agreementId: string;
-  counterPartyName: string;
-}) {
+export default function SignForm({ agreementId, counterPartyName }: { agreementId: string; counterPartyName: string }) {
   const [state, action, pending] = useActionState(signAgreement, initialState);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
@@ -36,7 +28,6 @@ export default function SignForm({
   function getCanvasPoint(event: PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
     if (!canvas) return { x: 0, y: 0 };
-
     const rect = canvas.getBoundingClientRect();
     return {
       x: (event.clientX - rect.left) * (canvas.width / rect.width),
@@ -47,27 +38,23 @@ export default function SignForm({
   function startDrawing(event: PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     isDrawingRef.current = true;
     canvas.setPointerCapture(event.pointerId);
-    const context = canvas.getContext("2d");
     const point = getCanvasPoint(event);
-    context?.beginPath();
-    context?.moveTo(point.x, point.y);
+    canvas.getContext("2d")?.beginPath();
+    canvas.getContext("2d")?.moveTo(point.x, point.y);
   }
 
   function draw(event: PointerEvent<HTMLCanvasElement>) {
     if (!isDrawingRef.current) return;
-
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
     if (!canvas || !context) return;
-
     const point = getCanvasPoint(event);
     context.lineWidth = 3;
     context.lineCap = "round";
     context.lineJoin = "round";
-    context.strokeStyle = "#0f172a";
+    context.strokeStyle = "#16283a";
     context.lineTo(point.x, point.y);
     context.stroke();
     setSignatureImage(canvas.toDataURL("image/png"));
@@ -82,317 +69,100 @@ export default function SignForm({
   function clearSignature() {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
-    if (canvas && context) {
-      context.clearRect(0, 0, canvas.width, canvas.height);
-    }
+    if (canvas && context) context.clearRect(0, 0, canvas.width, canvas.height);
     setSignatureImage("");
   }
 
   function handleUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.onload = () => {
-      if (typeof reader.result === "string") {
-        setSignatureImage(reader.result);
-      }
+      if (typeof reader.result === "string") setSignatureImage(reader.result);
     };
     reader.readAsDataURL(file);
   }
 
   return (
-    <form action={action} style={{ display: "grid", gap: "18px" }}>
+    <form action={action} className={styles.signatureForm}>
       <input type="hidden" name="agreementId" value={agreementId} />
       <input type="hidden" name="signatureImage" value={signatureImage} />
 
-      {state?.errors?.general && (
-        <div style={errorBannerStyle}>{state.errors.general}</div>
-      )}
+      {state?.errors?.general && <div className={styles.errorBanner}>{state.errors.general}</div>}
 
-      <div style={confirmationGridStyle}>
-        <label style={checkCardStyle}>
-          <input type="checkbox" name="confirmedRead" style={checkboxStyle} />
+      <div className={styles.confirmationGrid}>
+        <label className={styles.checkCard}>
+          <input type="checkbox" name="confirmedRead" className={styles.checkbox} />
           <span>
-            <strong style={checkTitleStyle}>I reviewed the agreement.</strong>
-            <span style={checkCopyStyle}>
-              I checked the parties, amount, terms, due date, and responsibilities.
-            </span>
+            <strong className={styles.checkTitle}>I reviewed the agreement.</strong>
+            <span className={styles.checkCopy}>I checked the parties, amount, terms, due date, and responsibilities.</span>
           </span>
         </label>
-        {state?.errors?.confirmedRead && <p style={fieldErrorStyle}>{state.errors.confirmedRead}</p>}
+        {state?.errors?.confirmedRead && <p className={styles.fieldError}>{state.errors.confirmedRead}</p>}
 
-        <label style={checkCardStyle}>
-          <input type="checkbox" name="consentedSignature" style={checkboxStyle} />
+        <label className={styles.checkCard}>
+          <input type="checkbox" name="consentedSignature" className={styles.checkbox} />
           <span>
-            <strong style={checkTitleStyle}>I consent to electronic signing.</strong>
-            <span style={checkCopyStyle}>
-              I understand this signature will be saved as part of the agreement record.
-            </span>
+            <strong className={styles.checkTitle}>I consent to electronic signing.</strong>
+            <span className={styles.checkCopy}>I understand this signature becomes part of the agreement record.</span>
           </span>
         </label>
-        {state?.errors?.consentedSignature && <p style={fieldErrorStyle}>{state.errors.consentedSignature}</p>}
+        {state?.errors?.consentedSignature && <p className={styles.fieldError}>{state.errors.consentedSignature}</p>}
       </div>
 
-      <div style={fieldGroupStyle}>
-        <label htmlFor="typedSignature" style={labelStyle}>
-          Typed legal signature
-        </label>
-        <input
-          id="typedSignature"
-          name="typedSignature"
-          type="text"
-          placeholder={counterPartyName}
-          style={inputStyle}
-        />
-        <p style={hintStyle}>This must match your full name: {counterPartyName}</p>
-        {state?.errors?.typedSignature && <p style={fieldErrorStyle}>{state.errors.typedSignature}</p>}
+      <div className={styles.field}>
+        <label htmlFor="typedSignature" className={styles.fieldLabel}>Typed legal signature</label>
+        <input id="typedSignature" name="typedSignature" type="text" placeholder={counterPartyName} className={styles.control} />
+        <p className={styles.fieldHint}>This must match your full name: {counterPartyName}</p>
+        {state?.errors?.typedSignature && <p className={styles.fieldError}>{state.errors.typedSignature}</p>}
       </div>
 
-      <div style={signaturePanelStyle}>
-        <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", alignItems: "start", flexWrap: "wrap" }}>
+      <div className={styles.signaturePanel}>
+        <div className={styles.signatureHeader}>
           <div>
-            <h3 style={{ margin: "0 0 6px", color: "#0f172a", fontSize: "16px", fontWeight: 900 }}>
-              Signature mark
-            </h3>
-            <p style={{ margin: 0, color: "#64748b", fontSize: "13px", lineHeight: 1.55 }}>
-              Draw your signature or upload a clear image. This is saved together with your typed name.
-            </p>
+            <h3>Signature mark</h3>
+            <p>Draw your signature or upload a clear image. It is saved together with your typed name.</p>
           </div>
-          <div style={segmentedStyle}>
-            <button
-              type="button"
-              onClick={() => setSignatureMode("draw")}
-              style={signatureMode === "draw" ? segmentActiveStyle : segmentStyle}
-            >
-              Draw
-            </button>
-            <button
-              type="button"
-              onClick={() => setSignatureMode("upload")}
-              style={signatureMode === "upload" ? segmentActiveStyle : segmentStyle}
-            >
-              Upload
-            </button>
+          <div className={styles.segmented}>
+            <button type="button" onClick={() => setSignatureMode("draw")} className={signatureMode === "draw" ? styles.segmentActive : styles.segment}>Draw</button>
+            <button type="button" onClick={() => setSignatureMode("upload")} className={signatureMode === "upload" ? styles.segmentActive : styles.segment}>Upload</button>
           </div>
         </div>
 
         {signatureMode === "draw" ? (
-          <div style={{ display: "grid", gap: "10px" }}>
+          <div className={styles.canvasStack}>
             <canvas
               ref={canvasRef}
-              className="signature-paper"
               width={720}
               height={240}
               onPointerDown={startDrawing}
               onPointerMove={draw}
               onPointerUp={stopDrawing}
               onPointerCancel={stopDrawing}
-              style={canvasStyle}
+              className={styles.signatureCanvas}
               aria-label="Draw signature"
             />
-            <button className="signature-secondary-button" type="button" onClick={clearSignature} style={secondaryButtonStyle}>
-              Clear signature
-            </button>
+            <button type="button" onClick={clearSignature} className={styles.secondaryButton}>Clear signature</button>
           </div>
         ) : (
-          <div style={uploadBoxStyle}>
+          <div className={styles.uploadBox}>
             <input accept="image/png,image/jpeg,image/webp" type="file" onChange={handleUpload} />
-            <p style={hintStyle}>PNG, JPG, or WebP works best. Keep the image small and readable.</p>
+            <p className={styles.fieldHint}>PNG, JPG, or WebP works best. Keep the image small and readable.</p>
           </div>
         )}
 
         {signatureImage && (
-          <div className="signature-paper" style={previewStyle}>
-            <span style={{ color: "#64748b", fontSize: "12px", fontWeight: 900, textTransform: "uppercase" }}>
-              Preview
-            </span>
-            <Image
-              src={signatureImage}
-              alt="Signature preview"
-              width={420}
-              height={120}
-              unoptimized
-              style={{ width: "100%", maxHeight: "96px", objectFit: "contain" }}
-            />
+          <div className={styles.preview}>
+            <span className={styles.previewLabel}>Preview</span>
+            <Image src={signatureImage} alt="Signature preview" width={420} height={120} unoptimized />
           </div>
         )}
-        {state?.errors?.signatureImage && <p style={fieldErrorStyle}>{state.errors.signatureImage}</p>}
+        {state?.errors?.signatureImage && <p className={styles.fieldError}>{state.errors.signatureImage}</p>}
       </div>
 
-      <button type="submit" disabled={pending} style={primaryButtonStyle}>
-        {pending ? "Signing agreement..." : "Sign as counterparty"}
+      <button type="submit" disabled={pending} className={styles.submitButton}>
+        {pending ? "Signing agreement…" : "Sign as counterparty"}
       </button>
     </form>
   );
 }
-
-const confirmationGridStyle = {
-  display: "grid",
-  gap: "10px",
-};
-
-const checkCardStyle = {
-  display: "grid",
-  gridTemplateColumns: "20px 1fr",
-  gap: "12px",
-  alignItems: "start",
-  padding: "14px",
-  border: "1px solid #dbeafe",
-  borderRadius: "14px",
-  background: "#f8fafc",
-};
-
-const checkboxStyle = {
-  width: "18px",
-  height: "18px",
-  marginTop: "2px",
-  accentColor: "#005461",
-};
-
-const checkTitleStyle = {
-  display: "block",
-  color: "#0f172a",
-  fontSize: "14px",
-  fontWeight: 900,
-  marginBottom: "3px",
-};
-
-const checkCopyStyle = {
-  display: "block",
-  color: "#64748b",
-  fontSize: "13px",
-  lineHeight: 1.5,
-};
-
-const fieldGroupStyle = {
-  display: "grid",
-  gap: "8px",
-};
-
-const labelStyle = {
-  color: "#0f172a",
-  fontSize: "13px",
-  fontWeight: 900,
-};
-
-const inputStyle = {
-  width: "100%",
-  minHeight: "46px",
-  border: "1px solid #dbe3ef",
-  borderRadius: "12px",
-  padding: "0 14px",
-  color: "#0f172a",
-  fontSize: "15px",
-  outline: "none",
-};
-
-const hintStyle = {
-  margin: 0,
-  color: "#64748b",
-  fontSize: "12px",
-  lineHeight: 1.5,
-};
-
-const fieldErrorStyle = {
-  margin: 0,
-  color: "#b91c1c",
-  fontSize: "13px",
-  fontWeight: 800,
-};
-
-const errorBannerStyle = {
-  border: "1px solid #fecaca",
-  background: "#fef2f2",
-  color: "#991b1b",
-  borderRadius: "12px",
-  padding: "12px 14px",
-  fontSize: "14px",
-  fontWeight: 800,
-};
-
-const signaturePanelStyle = {
-  display: "grid",
-  gap: "14px",
-  border: "1px solid #e5e7eb",
-  borderRadius: "16px",
-  padding: "16px",
-  background: "white",
-};
-
-const segmentedStyle = {
-  display: "inline-flex",
-  padding: "4px",
-  borderRadius: "12px",
-  background: "#f1f5f9",
-  gap: "4px",
-};
-
-const segmentStyle = {
-  border: 0,
-  borderRadius: "9px",
-  background: "transparent",
-  color: "#64748b",
-  padding: "8px 12px",
-  fontSize: "13px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const segmentActiveStyle = {
-  ...segmentStyle,
-  background: "#005461",
-  color: "white",
-};
-
-const canvasStyle = {
-  width: "100%",
-  aspectRatio: "3 / 1",
-  border: "1px dashed #94a3b8",
-  borderRadius: "14px",
-  background: "#fbfdff",
-  touchAction: "none",
-  cursor: "crosshair",
-};
-
-const uploadBoxStyle = {
-  display: "grid",
-  gap: "8px",
-  border: "1px dashed #94a3b8",
-  borderRadius: "14px",
-  background: "#fbfdff",
-  padding: "18px",
-};
-
-const previewStyle = {
-  display: "grid",
-  gap: "8px",
-  borderTop: "1px solid #eef2f7",
-  paddingTop: "14px",
-};
-
-const secondaryButtonStyle = {
-  justifySelf: "start",
-  border: "1px solid #dbe3ef",
-  borderRadius: "10px",
-  background: "white",
-  color: "#0f172a",
-  minHeight: "38px",
-  padding: "0 13px",
-  fontSize: "13px",
-  fontWeight: 900,
-  cursor: "pointer",
-};
-
-const primaryButtonStyle = {
-  border: 0,
-  borderRadius: "12px",
-  background: "#3BC1A8",
-  color: "#005461",
-  minHeight: "48px",
-  padding: "0 18px",
-  fontSize: "15px",
-  fontWeight: 900,
-  cursor: "pointer",
-  boxShadow: "0 12px 24px rgba(0, 84, 97, 0.14)",
-};

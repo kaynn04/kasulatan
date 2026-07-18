@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { loginUser } from "./actions";
+import styles from "../auth.module.css";
 
 type LoginState = {
   success: boolean;
@@ -17,6 +18,14 @@ const initialState: LoginState = {
   errors: {},
 };
 
+function ErrorIcon() {
+  return (
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0Zm0 12a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4.5a1 1 0 0 1-2 0v-3a1 1 0 0 1 2 0v3Z" />
+    </svg>
+  );
+}
+
 function Field({
   label,
   htmlFor,
@@ -29,121 +38,63 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-      <label htmlFor={htmlFor} style={{
-        fontSize: "11px",
-        fontWeight: 500,
-        textTransform: "uppercase",
-        letterSpacing: "0.08em",
-        color: "#6b7280",
-      }}>
-        {label}
-      </label>
+    <div className={styles.field}>
+      <label htmlFor={htmlFor}>{label}</label>
       {children}
-      {error && (
-        <p style={{
-          display: "flex", alignItems: "center", gap: "4px",
-          fontSize: "11.5px", color: "#e53e3e", margin: 0,
-        }}>
-          <svg viewBox="0 0 12 12" width="11" height="11" fill="currentColor">
-            <path d="M6 0a6 6 0 100 12A6 6 0 006 0zm0 9a.75.75 0 110-1.5A.75.75 0 016 9zm.75-3.75a.75.75 0 01-1.5 0v-2.5a.75.75 0 011.5 0v2.5z" />
-          </svg>
-          {error}
-        </p>
-      )}
+      {error && <p className={styles.fieldError}><ErrorIcon />{error}</p>}
     </div>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  borderRadius: "10px",
-  border: "1.5px solid #e5e7eb",
-  background: "#f9fafb",
-  padding: "10px 14px",
-  fontSize: "14px",
-  color: "#111827",
-  outline: "none",
-  fontFamily: "inherit",
-  boxSizing: "border-box",
-};
 
 export default function LoginForm() {
   const [state, action, pending] = useActionState(loginUser, initialState);
 
   return (
-    <form action={action} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-
-      {/* General error banner */}
+    <form action={action} className={styles.loginForm}>
       {state?.errors?.general && (
-        <div style={{
-          display: "flex", alignItems: "flex-start", gap: "10px",
-          borderRadius: "10px", border: "1px solid rgba(229,62,62,0.2)",
-          background: "rgba(229,62,62,0.05)", padding: "12px 14px",
-        }}>
-          <svg viewBox="0 0 16 16" width="15" height="15" fill="#e53e3e" style={{ marginTop: "1px", flexShrink: 0 }}>
-            <path d="M8 0a8 8 0 100 16A8 8 0 008 0zm0 12a1 1 0 110-2 1 1 0 010 2zm1-4.5a1 1 0 01-2 0v-3a1 1 0 012 0v3z" />
-          </svg>
-          <p style={{ fontSize: "13px", color: "#e53e3e", margin: 0 }}>{state.errors.general}</p>
+        <div className={styles.errorBanner} role="alert">
+          <ErrorIcon />
+          <p>{state.errors.general}</p>
         </div>
       )}
 
-      {/* Email */}
       <Field label="Email address" htmlFor="email" error={state?.errors?.email}>
         <input
-          style={inputStyle}
+          className={styles.input}
           type="email"
           id="email"
           name="email"
-          placeholder="jane@example.com"
+          placeholder="maria@example.com"
+          autoComplete="email"
+          aria-invalid={Boolean(state?.errors?.email)}
         />
       </Field>
 
-      {/* Password */}
       <Field label="Password" htmlFor="password" error={state?.errors?.password}>
         <input
-          style={inputStyle}
+          className={styles.input}
           type="password"
           id="password"
           name="password"
           placeholder="Enter your password"
+          autoComplete="current-password"
+          aria-invalid={Boolean(state?.errors?.password)}
         />
       </Field>
 
-      {/* Submit */}
-      <button
-        type="submit"
-        disabled={pending}
-        style={{
-          marginTop: "6px",
-          width: "100%",
-          padding: "12px",
-          borderRadius: "10px",
-          border: "none",
-          background: pending ? "#249E94" : "linear-gradient(135deg, #005461, #0C7779)",
-          color: "white",
-          fontSize: "18px",
-          fontWeight: 500,
-          fontFamily: "inherit",
-          cursor: pending ? "not-allowed" : "pointer",
-          opacity: pending ? 0.7 : 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          transition: "opacity 0.2s",
-        }}
-      >
-        {pending && (
-          <svg style={{ animation: "spin 1s linear infinite" }} width="16" height="16"
-            viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+      <button type="submit" disabled={pending} className={styles.submitButton}>
+        {pending && <span className={styles.spinner} aria-hidden="true" />}
+        {pending ? "Signing in…" : "Sign in securely"}
+        {!pending && (
+          <svg viewBox="0 0 20 20" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <path d="M4 10h12M11 5l5 5-5 5" />
           </svg>
         )}
-        {pending ? "Signing in…" : "Sign in"}
       </button>
 
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <p className={styles.formFootnote}>
+        Your session is stored in a secure, HTTP-only cookie on this device.
+      </p>
     </form>
   );
 }
