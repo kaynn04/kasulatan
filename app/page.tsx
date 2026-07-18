@@ -1,4 +1,5 @@
 import Link from "next/link";
+import TiltedCard from "@/components/TiltedCard";
 import { getSession } from "@/lib/session";
 import styles from "./landing.module.css";
 
@@ -66,7 +67,6 @@ export default async function HomePage() {
   return (
     <main className={`${styles.page} landing-page`}>
       <section className={styles.hero}>
-        <div className={styles.heroTexture} aria-hidden="true" />
         <div className={styles.container}>
           <div className={styles.heroGrid}>
             <div className={styles.heroCopy}>
@@ -102,59 +102,60 @@ export default async function HomePage() {
             </div>
 
             <div className={styles.previewWrap} aria-label="Example Kasulatan agreement record">
-              <div className={styles.previewSun} aria-hidden="true" />
-              <div className={styles.previewCard}>
-                <div className={styles.previewHeader}>
-                  <div className={styles.previewBrand}>
-                    <span className={styles.previewLogo} aria-hidden="true">
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M7 3h7l4 4v14H7z" />
-                        <path d="M14 3v5h5M10 13h6M10 17h6" />
-                      </svg>
-                    </span>
-                    <span>Kasulatan</span>
+              <TiltedCard rotateAmplitude={7} scaleOnHover={1.025}>
+                <div className={styles.previewCard}>
+                  <div className={styles.previewHeader}>
+                    <div className={styles.previewBrand}>
+                      <span className={styles.previewLogo} aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M7 3h7l4 4v14H7z" />
+                          <path d="M14 3v5h5M10 13h6M10 17h6" />
+                        </svg>
+                      </span>
+                      <span>Kasulatan</span>
+                    </div>
+                    <span className={styles.statusPill}>Ready to sign</span>
                   </div>
-                  <span className={styles.statusPill}>Ready to sign</span>
+
+                  <div className={styles.previewBody}>
+                    <div className={styles.previewMeta}>
+                      <span>LOAN AGREEMENT</span>
+                      <span>KAS-20260717-A8F2</span>
+                    </div>
+                    <h2>Personal loan for school expenses</h2>
+                    <p>Clear terms between two parties, recorded before funds are transferred.</p>
+
+                    <div className={styles.amountRow}>
+                      <div>
+                        <span className={styles.fieldLabel}>AGREED AMOUNT</span>
+                        <strong>₱25,000.00</strong>
+                      </div>
+                      <div>
+                        <span className={styles.fieldLabel}>DUE DATE</span>
+                        <strong>30 Sep 2026</strong>
+                      </div>
+                    </div>
+
+                    <div className={styles.partyList}>
+                      <div className={styles.partyRow}>
+                        <span className={styles.avatar}>MA</span>
+                        <span><strong>Maria A.</strong><small>Creator · reviewed</small></span>
+                        <span className={styles.reviewed}><CheckIcon /></span>
+                      </div>
+                      <div className={styles.partyRow}>
+                        <span className={`${styles.avatar} ${styles.avatarAlt}`}>JR</span>
+                        <span><strong>Jose R.</strong><small>Counterparty · invited</small></span>
+                        <span className={styles.pendingDot} aria-hidden="true" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.previewFooter}>
+                    <span className={styles.recordIcon} aria-hidden="true">✓</span>
+                    <span><strong>Activity recorded</strong><small>Identity, consent, and timestamps</small></span>
+                  </div>
                 </div>
-
-                <div className={styles.previewBody}>
-                  <div className={styles.previewMeta}>
-                    <span>LOAN AGREEMENT</span>
-                    <span>KAS-20260717-A8F2</span>
-                  </div>
-                  <h2>Personal loan for school expenses</h2>
-                  <p>Clear terms between two parties, recorded before funds are transferred.</p>
-
-                  <div className={styles.amountRow}>
-                    <div>
-                      <span className={styles.fieldLabel}>AGREED AMOUNT</span>
-                      <strong>₱25,000.00</strong>
-                    </div>
-                    <div>
-                      <span className={styles.fieldLabel}>DUE DATE</span>
-                      <strong>30 Sep 2026</strong>
-                    </div>
-                  </div>
-
-                  <div className={styles.partyList}>
-                    <div className={styles.partyRow}>
-                      <span className={styles.avatar}>MA</span>
-                      <span><strong>Maria A.</strong><small>Creator · reviewed</small></span>
-                      <span className={styles.reviewed}><CheckIcon /></span>
-                    </div>
-                    <div className={styles.partyRow}>
-                      <span className={`${styles.avatar} ${styles.avatarAlt}`}>JR</span>
-                      <span><strong>Jose R.</strong><small>Counterparty · invited</small></span>
-                      <span className={styles.pendingDot} aria-hidden="true" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.previewFooter}>
-                  <span className={styles.recordIcon} aria-hidden="true">✓</span>
-                  <span><strong>Activity recorded</strong><small>Identity, consent, and timestamps</small></span>
-                </div>
-              </div>
+              </TiltedCard>
               <div className={styles.floatingNote}>
                 <span aria-hidden="true">✓</span>
                 <div><strong>Terms reviewed</strong><small>Both parties see one record</small></div>
@@ -250,7 +251,6 @@ export default async function HomePage() {
       <section className={styles.finalSection}>
         <div className={styles.container}>
           <div className={styles.finalCard}>
-            <div className={styles.finalSun} aria-hidden="true">✦</div>
             <span className={styles.kicker}>Clarity is a form of care</span>
             <h2>Put the agreement in writing before the transaction begins.</h2>
             <p>Take a few minutes now to give both parties something clear to rely on later.</p>

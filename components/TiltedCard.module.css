@@ -1,0 +1,20 @@
+.figure {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  perspective: 1000px;
+}
+
+.inner {
+  position: relative;
+  width: 100%;
+  transform-style: preserve-3d;
+  transform-origin: center;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inner {
+    will-change: auto;
+  }
+}

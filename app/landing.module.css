@@ -45,18 +45,6 @@
     linear-gradient(120deg, var(--landing-bg) 0%, var(--landing-bg) 64%, color-mix(in srgb, var(--landing-gold-soft) 50%, var(--landing-bg)) 100%);
 }
 
-.heroTexture {
-  position: absolute;
-  inset: 0;
-  opacity: 0.34;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(22, 40, 58, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22, 40, 58, 0.035) 1px, transparent 1px);
-  background-size: 34px 34px;
-  mask-image: linear-gradient(to right, black, transparent 58%);
-}
-
 .heroGrid {
   position: relative;
   display: grid;
@@ -198,30 +186,6 @@
   padding: 30px 10px 34px 18px;
 }
 
-.previewSun {
-  position: absolute;
-  top: -28px;
-  right: -74px;
-  width: 260px;
-  height: 260px;
-  border-radius: 50%;
-  border: 1px solid color-mix(in srgb, var(--landing-gold) 45%, transparent);
-}
-
-.previewSun::before,
-.previewSun::after {
-  content: "";
-  position: absolute;
-  inset: 26px;
-  border: 1px solid color-mix(in srgb, var(--landing-gold) 40%, transparent);
-  border-radius: 50%;
-}
-
-.previewSun::after {
-  inset: 54px;
-  background: color-mix(in srgb, var(--landing-gold) 20%, transparent);
-}
-
 .previewCard {
   position: relative;
   overflow: hidden;
@@ -229,7 +193,6 @@
   border-radius: 22px;
   background: var(--landing-surface-strong);
   box-shadow: var(--landing-shadow);
-  transform: rotate(1.2deg);
 }
 
 .previewHeader {
@@ -639,18 +602,8 @@
 .evidenceSection {
   position: relative;
   padding: 110px 0;
-  background: var(--landing-blue-deep);
+  background: linear-gradient(135deg, var(--landing-blue-deep), color-mix(in srgb, var(--landing-blue-deep) 82%, var(--landing-blue)));
   color: #fffdf8;
-}
-
-.evidenceSection::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.12;
-  background-image: radial-gradient(circle, #fff 1px, transparent 1px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(to left, black, transparent 63%);
 }
 
 .evidenceGrid {
@@ -732,21 +685,6 @@
 .finalCard > p {
   max-width: 590px;
   margin: 20px 0 30px;
-}
-
-.finalSun {
-  position: absolute;
-  right: 40px;
-  bottom: -95px;
-  display: grid;
-  width: 280px;
-  height: 280px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--landing-gold) 55%, transparent);
-  border-radius: 50%;
-  background: color-mix(in srgb, var(--landing-gold-soft) 45%, transparent);
-  color: var(--landing-gold);
-  font-size: 76px;
 }
 
 .finalSignIn {
@@ -859,9 +797,6 @@
     padding: 48px 38px;
   }
 
-  .finalSun {
-    opacity: 0.35;
-  }
 }
 
 @media (max-width: 620px) {
